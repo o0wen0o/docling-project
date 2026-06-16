@@ -1,0 +1,18 @@
+# Docling 文档转换 — 项目依赖
+# 安装: .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+# torch 系列是 Intel XPU 构建 (2.x+xpu)，不在默认 PyPI，需走 PyTorch XPU 源。
+# 若去掉下面这行 extra-index-url，会装到 CPU 版 → 丢失 Intel GPU 加速。
+--extra-index-url https://download.pytorch.org/whl/xpu
+
+torch==2.11.0+xpu
+torchvision==0.26.0+xpu
+torchaudio==2.11.0+xpu
+
+# docling 会自动带入 docling-core / ibm-models / parse / numpy / pandas / pillow / safetensors
+docling==2.102.2
+
+# gradio 会自动带入 gradio_client
+gradio==6.13.0
+
+transformers==5.6.2
