@@ -1,0 +1,19 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Output
+output/
+
+# Env / secrets
+.env
+
+# IDE
+.vscode/
+.idea/
