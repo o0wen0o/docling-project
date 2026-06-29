@@ -264,65 +264,79 @@ _ICON = {
 _, dev_label_init = device_info()
 
 CSS = """
-:root, .gradio-container { --dl-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --dl-cta:#F97316; --dl-cta-hover:#EA580C; }
+:root, .gradio-container {
+  --dl-font:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dl-accent:#4F46E5;          /* indigo-600 — single accent across the whole UI */
+  --dl-accent-hover:#4338CA;    /* indigo-700 */
+  --dl-r-card:16px;             /* card corners */
+  --dl-r-input:10px;            /* control corners — no more sharp edges */
+  --dl-gap:16px;                /* uniform gap between cards */
+}
 
-/* Single-column wizard: outer cap stays wide, content column is narrow + centered */
-.gradio-container { font-family: var(--dl-font) !important; max-width: 1180px !important; margin: 0 auto !important; }
-#dl-wrap { max-width: 760px; margin: 0 auto; width: 100%; }
+/* Two-column shell — wider cap than the old single-column wizard */
+.gradio-container { font-family:var(--dl-font) !important; max-width:1240px !important; margin:0 auto !important; }
+#dl-wrap { max-width:1120px; margin:0 auto; width:100%; }
 
-/* Visible focus rings for keyboard nav (a11y) */
-.gradio-container :focus-visible { outline: 2px solid var(--primary-500) !important;
-  outline-offset: 2px; border-radius: 6px; }
+/* Visible focus rings for keyboard nav (a11y) — single accent */
+.gradio-container :focus-visible { outline:2px solid var(--dl-accent) !important;
+  outline-offset:2px; border-radius:6px; }
 
-/* Hero header — centered */
-.dl-hero { display:flex; flex-direction:column; align-items:center; text-align:center;
-  gap:12px; padding: 14px 2px 4px; }
-.dl-hero .dl-logo { display:flex; align-items:center; justify-content:center; width:60px; height:60px;
-  border-radius:18px; background:linear-gradient(135deg,#4f46e5,#2563eb); color:#fff;
-  box-shadow:0 8px 22px rgba(37,99,235,.30); flex:0 0 auto; }
-.dl-hero h1 { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.025em; line-height:1.12; }
-.dl-hero p  { margin:0; font-size:1rem; color:var(--body-text-color-subdued); max-width:46ch; }
-.dl-chip { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; font-weight:500;
-  padding:4px 12px; border-radius:999px; background:var(--neutral-100);
-  color:var(--body-text-color); border:1px solid var(--border-color-primary); }
-.dl-chip svg { color:#16A34A; }
+/* Hero — logo + title side by side, centered, full width above the columns */
+.dl-hero { display:flex; align-items:center; justify-content:center; gap:16px;
+  text-align:left; padding:6px 2px 20px; }
+.dl-hero .dl-logo { display:flex; align-items:center; justify-content:center; width:56px; height:56px;
+  border-radius:16px; background:linear-gradient(135deg,#4f46e5,#2563eb); color:#fff;
+  box-shadow:0 8px 22px rgba(79,70,229,.28); flex:0 0 auto; }
+.dl-hero h1 { margin:0; font-size:1.7rem; font-weight:700; letter-spacing:-.025em; line-height:1.15; }
+.dl-hero p  { margin:2px 0 0; font-size:.95rem; color:var(--body-text-color-subdued); max-width:52ch; }
 
-/* Status bar — pill, centered, with entrance fade */
-.dl-status { display:inline-flex; align-items:center; gap:9px; font-size:.9rem; font-weight:600;
-  padding:11px 16px; border-radius:12px; line-height:1.3; animation: dl-fade-in .25s ease both; }
-.dl-status svg { flex:0 0 auto; }
-.dl-status-wrap, .dl-status-wrap > div { display:flex; justify-content:center; padding:2px 0; }
-.dl-spin { animation: dl-rot .9s linear infinite; transform-origin:center; }
-@keyframes dl-rot { to { transform: rotate(360deg); } }
-@keyframes dl-fade-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+/* Two-column layout: inputs (left) | results (right). Right column sticks while scrolling. */
+#dl-main { gap:24px !important; align-items:start !important; }
+.dl-col { gap:var(--dl-gap) !important; }
+#dl-right { position:sticky; top:16px; align-self:start; }
 
-/* Sections — flat: gr.Group already draws the single unified frame.
-   No extra border/bg here, else每段双层边框 (frame-in-frame). */
-.dl-card { border:none !important; background:transparent !important;
-  box-shadow:none !important; padding:4px 2px; }
+/* Cards — single CSS frame (replaces gr.Group, which double-bordered).
+   Real internal padding + consistent radius. */
+.dl-card { border:1px solid var(--border-color-primary) !important;
+  background:var(--block-background-fill) !important;
+  border-radius:var(--dl-r-card) !important; padding:16px 18px 18px !important;
+  box-shadow:0 1px 2px rgba(15,23,42,.04) !important; }
 .dl-section-title { display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:600;
   text-transform:uppercase; letter-spacing:.05em; color:var(--body-text-color-subdued);
-  margin:14px 2px 8px; }
+  margin:0 0 14px; }
 .dl-step { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px;
-  border-radius:999px; background:var(--primary-500); color:#fff; font-size:.72rem; font-weight:700;
+  border-radius:999px; background:var(--dl-accent); color:#fff; font-size:.72rem; font-weight:700;
   font-feature-settings:"tnum"; flex:0 0 auto; }
 
-/* Upload dropzone affordance */
-#dl-drop { transition: border-color .2s ease, background-color .2s ease; }
-#dl-drop:hover { border-color: var(--primary-400) !important; }
+/* Round inner controls the theme leaves sharp (dropzone, inputs, tabs, table) */
+#dl-drop, #dl-drop > .wrap, #dl-drop button { border-radius:var(--dl-r-input) !important; }
+#dl-drop { transition:border-color .2s ease, background-color .2s ease; }
+#dl-drop:hover { border-color:var(--dl-accent) !important; }
+.dl-card input, .dl-card textarea, .dl-card .wrap-inner,
+.dl-card .tab-nav button { border-radius:var(--dl-r-input) !important; }
+#dl-results .table-wrap { border-radius:var(--dl-r-input) !important; overflow:hidden; }
 
-/* Primary CTA — orange, full-width, tactile */
+/* Status pill — left-aligned under the CTA, with entrance fade */
+.dl-status { display:inline-flex; align-items:center; gap:9px; font-size:.9rem; font-weight:600;
+  padding:11px 16px; border-radius:12px; line-height:1.3; animation:dl-fade-in .25s ease both; }
+.dl-status svg { flex:0 0 auto; }
+.dl-status-wrap, .dl-status-wrap > div { display:flex; justify-content:flex-start; padding:0; }
+.dl-spin { animation:dl-rot .9s linear infinite; transform-origin:center; }
+@keyframes dl-rot { to { transform:rotate(360deg); } }
+@keyframes dl-fade-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+/* Primary CTA — indigo (matches accent), full-width, tactile */
 button.dl-run { font-weight:700 !important; letter-spacing:.01em; cursor:pointer;
-  background: var(--dl-cta) !important; border-color: var(--dl-cta) !important; color:#fff !important;
-  box-shadow: 0 4px 14px rgba(249,115,22,.30) !important;
-  transition: transform .15s ease, box-shadow .2s ease, background-color .15s ease; }
-button.dl-run:hover { background: var(--dl-cta-hover) !important; border-color: var(--dl-cta-hover) !important;
-  transform: translateY(-1px); box-shadow: 0 6px 18px rgba(249,115,22,.38) !important; }
-button.dl-run:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(249,115,22,.30) !important; }
+  border-radius:var(--dl-r-input) !important;
+  background:var(--dl-accent) !important; border-color:var(--dl-accent) !important; color:#fff !important;
+  box-shadow:0 4px 14px rgba(79,70,229,.28) !important;
+  transition:transform .15s ease, box-shadow .2s ease, background-color .15s ease; }
+button.dl-run:hover { background:var(--dl-accent-hover) !important; border-color:var(--dl-accent-hover) !important;
+  transform:translateY(-1px); box-shadow:0 6px 18px rgba(79,70,229,.36) !important; }
+button.dl-run:active { transform:translateY(0); box-shadow:0 2px 8px rgba(79,70,229,.28) !important; }
 
-/* Footer hint */
-.dl-foot { font-size:.78rem; color:var(--body-text-color-subdued); padding:2px 4px; line-height:1.6;
+/* Footer hint — full width below the columns */
+.dl-foot { font-size:.78rem; color:var(--body-text-color-subdued); padding:10px 4px 2px; line-height:1.7;
   text-align:center; }
 .dl-foot code { font-size:.74rem; }
 
@@ -331,10 +345,16 @@ button.dl-run:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(249,
   color:var(--body-text-color-subdued); padding:48px 16px; }
 .dl-empty svg { opacity:.5; }
 
+/* Stack to single column on narrow screens; drop the sticky */
+@media (max-width:860px) {
+  #dl-main { flex-direction:column !important; }
+  #dl-right { position:static; }
+}
+
 /* Reduced motion — kill all transitions/animations */
 @media (prefers-reduced-motion: reduce) {
-  .dl-spin { animation: none; }
-  .dl-card, .dl-run, .dl-status, #dl-drop { transition: none !important; animation: none !important; }
+  .dl-spin { animation:none; }
+  .dl-card, .dl-run, .dl-status, #dl-drop { transition:none !important; animation:none !important; }
 }
 """
 
@@ -352,9 +372,9 @@ theme = gr.themes.Soft(
 with gr.Blocks(title="Docling 文档转换") as demo:
     md_state = gr.State({})   # 文件名 → markdown，供预览切换
 
-    # ── 单列向导布局：上传 → 选项 → 转换 → 结果 → 下载 ──
+    # ── 两列布局：左 = 输入（①上传 ②选项 + 转换），右 = ③结果（粘性） ──
     with gr.Column(elem_id="dl-wrap"):
-        # 顶部 Hero（居中），含自动检测到的设备 chip
+        # 顶部 Hero（全宽居中）
         gr.HTML(
             f'<div class="dl-hero">'
             f'  <div class="dl-logo">{_ICON["logo"]}</div>'
@@ -365,76 +385,81 @@ with gr.Blocks(title="Docling 文档转换") as demo:
             f'</div>'
         )
 
-        # 步骤 ① 上传
-        with gr.Group(elem_classes="dl-card"):
-            gr.HTML('<div class="dl-section-title"><span class="dl-step">1</span> 上传文件</div>')
-            files = gr.File(
-                label="拖入或点击选择（可多选）",
-                file_count="multiple",
-                file_types=[f"{e}" for e in sorted(SUPPORTED_EXT)],
-                height=180,
-                elem_id="dl-drop",
-            )
-
-        # 步骤 ② 选项
-        with gr.Group(elem_classes="dl-card"):
-            gr.HTML('<div class="dl-section-title"><span class="dl-step">2</span> 选项</div>')
-            device_choice = gr.Dropdown(
-                choices=list(DEVICE_MAP.keys()),
-                value="自动检测",
-                label="计算设备",
-                info=f"当前自动检测到：{dev_label_init}",
-            )
-            with gr.Row():
-                do_ocr = gr.Checkbox(value=True, label="OCR",
-                                     info="扫描件 / 图片型 PDF 需要")
-                do_tables = gr.Checkbox(value=True, label="表格结构识别",
-                                        info="还原表格行列结构")
-                want_json = gr.Checkbox(value=False, label="同时导出 JSON",
-                                        info="结构化数据，便于二次处理")
-
-        # 主 CTA（橙色、全宽、唯一主操作）
-        run_btn = gr.Button("开始转换", variant="primary", size="lg",
-                            elem_classes="dl-run")
-
-        # 状态条（居中 pill）
-        status = gr.HTML(
-            _status_html("idle", "等待上传 — 选好文件后点「开始转换」。"),
-            elem_classes="dl-status-wrap",
-        )
-
-        # 步骤 ③ 结果（预览 / 明细）
-        with gr.Group(elem_classes="dl-card"):
-            gr.HTML('<div class="dl-section-title"><span class="dl-step">3</span> 结果</div>')
-            with gr.Tabs():
-                with gr.Tab("预览"):
-                    preview_picker = gr.Dropdown(
-                        label="选择要预览的文件",
-                        choices=[], value=None, visible=False,
-                        interactive=True, filterable=True,
-                    )
-                    preview = gr.Markdown(
-                        f'<div class="dl-empty">{_ICON["logo"]}'
-                        f'<div>上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。</div></div>',
-                        height=460,
-                        max_height=560,
-                        line_breaks=True,
-                    )
-                with gr.Tab("结果明细"):
-                    results = gr.Dataframe(
-                        headers=["状态", "文件", "输出"],
-                        datatype=["str", "str", "str"],
-                        column_count=(3, "fixed"),
-                        wrap=True,
-                        interactive=False,
-                        max_height=460,
-                        value=[],
+        with gr.Row(elem_id="dl-main", equal_height=False):
+            # ── 左列：输入 ──
+            with gr.Column(scale=5, min_width=320, elem_classes="dl-col"):
+                # 步骤 ① 上传
+                with gr.Column(elem_classes="dl-card"):
+                    gr.HTML('<div class="dl-section-title"><span class="dl-step">1</span> 上传文件</div>')
+                    files = gr.File(
+                        label="拖入或点击选择（可多选）",
+                        file_count="multiple",
+                        file_types=[f"{e}" for e in sorted(SUPPORTED_EXT)],
+                        height=180,
+                        elem_id="dl-drop",
                     )
 
-        # 下载区（有结果才显示）
-        downloads = gr.File(label="下载结果", visible=False, interactive=False)
+                # 步骤 ② 选项
+                with gr.Column(elem_classes="dl-card"):
+                    gr.HTML('<div class="dl-section-title"><span class="dl-step">2</span> 选项</div>')
+                    device_choice = gr.Dropdown(
+                        choices=list(DEVICE_MAP.keys()),
+                        value="自动检测",
+                        label="计算设备",
+                        info=f"当前自动检测到：{dev_label_init}",
+                    )
+                    # 窄列：复选项纵向堆叠，不再三列拥挤
+                    do_ocr = gr.Checkbox(value=True, label="OCR",
+                                         info="扫描件 / 图片型 PDF 需要")
+                    do_tables = gr.Checkbox(value=True, label="表格结构识别",
+                                            info="还原表格行列结构")
+                    want_json = gr.Checkbox(value=False, label="同时导出 JSON",
+                                            info="结构化数据，便于二次处理")
 
-        # 底部说明
+                # 主 CTA（靛蓝、全宽、唯一主操作）
+                run_btn = gr.Button("开始转换", variant="primary", size="lg",
+                                    elem_classes="dl-run")
+
+                # 状态条（左对齐 pill）
+                status = gr.HTML(
+                    _status_html("idle", "等待上传 — 选好文件后点「开始转换」。"),
+                    elem_classes="dl-status-wrap",
+                )
+
+            # ── 右列：结果（滚动时粘性）──
+            with gr.Column(scale=7, min_width=380, elem_id="dl-right", elem_classes="dl-col"):
+                # 步骤 ③ 结果（预览 / 明细）
+                with gr.Column(elem_classes="dl-card", elem_id="dl-results"):
+                    gr.HTML('<div class="dl-section-title"><span class="dl-step">3</span> 结果</div>')
+                    with gr.Tabs():
+                        with gr.Tab("预览"):
+                            preview_picker = gr.Dropdown(
+                                label="选择要预览的文件",
+                                choices=[], value=None, visible=False,
+                                interactive=True, filterable=True,
+                            )
+                            preview = gr.Markdown(
+                                f'<div class="dl-empty">{_ICON["logo"]}'
+                                f'<div>上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。</div></div>',
+                                height=460,
+                                max_height=560,
+                                line_breaks=True,
+                            )
+                        with gr.Tab("结果明细"):
+                            results = gr.Dataframe(
+                                headers=["状态", "文件", "输出"],
+                                datatype=["str", "str", "str"],
+                                column_count=(3, "fixed"),
+                                wrap=True,
+                                interactive=False,
+                                max_height=460,
+                                value=[],
+                            )
+
+                # 下载区（有结果才显示）
+                downloads = gr.File(label="下载结果", visible=False, interactive=False)
+
+        # 底部说明（全宽）
         gr.HTML(
             '<div class="dl-foot">支持格式：'
             + ' '.join(f'<code>{e}</code>' for e in sorted(SUPPORTED_EXT))
