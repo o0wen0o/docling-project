@@ -238,7 +238,7 @@ def pick_preview(name, md_by_name):
 def _status_html(kind, text):
     # 文字用较深色阶（700）确保浅底上对比 ≥4.5:1；底色仍用同色 12% 淡色 tint
     palette = {
-        "idle":    ("var(--neutral-600)", "var(--neutral-100)", _ICON["info"]),
+        "idle":    ("var(--body-text-color-subdued)", "rgba(148,163,184,.15)", _ICON["info"]),
         "running": ("#1D4ED8", "rgba(37,99,235,.12)", _ICON["spin"]),
         "done":    ("#15803D", "rgba(22,163,74,.12)", _ICON["check"]),
         "warn":    ("#B45309", "rgba(217,119,6,.12)", _ICON["warn"]),
@@ -297,12 +297,10 @@ CSS = """
 @keyframes dl-rot { to { transform: rotate(360deg); } }
 @keyframes dl-fade-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
 
-/* Cards — micro-interaction elevation */
-.dl-card { border:1px solid var(--border-color-primary); border-radius:16px;
-  padding:8px 18px 18px; background:var(--background-fill-primary);
-  transition: border-color .2s ease, box-shadow .2s ease; }
-.dl-card:hover, .dl-card:focus-within { border-color: var(--primary-300);
-  box-shadow: 0 4px 16px rgba(37,99,235,.08); }
+/* Sections — flat: gr.Group already draws the single unified frame.
+   No extra border/bg here, else每段双层边框 (frame-in-frame). */
+.dl-card { border:none !important; background:transparent !important;
+  box-shadow:none !important; padding:4px 2px; }
 .dl-section-title { display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:600;
   text-transform:uppercase; letter-spacing:.05em; color:var(--body-text-color-subdued);
   margin:14px 2px 8px; }
@@ -364,7 +362,6 @@ with gr.Blocks(title="Docling 文档转换") as demo:
             f'    <h1>Docling 文档转换器</h1>'
             f'    <p>把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON）。</p>'
             f'  </div>'
-            f'  <span class="dl-chip">{_ICON["check"]} {dev_label_init}</span>'
             f'</div>'
         )
 

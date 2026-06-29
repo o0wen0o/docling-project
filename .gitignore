@@ -11,6 +11,9 @@ env/
 # Output
 output/
 
+# Logs
+*.log
+
 # Env / secrets
 .env
 
