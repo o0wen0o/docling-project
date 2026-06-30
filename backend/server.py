@@ -1,5 +1,6 @@
 """FastAPI backend — wraps converter.py, exposes SSE progress stream."""
 import asyncio
+import io
 import json
 import os
 import shutil
@@ -8,6 +9,7 @@ import socket
 import sys
 import tempfile
 import uuid
+import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List
@@ -21,6 +23,7 @@ except (AttributeError, ValueError):
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
+from pydantic import BaseModel
 
 import torch
 from converter import DEVICE_LABELS, device_info, has_xpu, run_conversion, shutdown
@@ -147,6 +150,27 @@ def download_file(filename: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, filename=safe)
+
+
+class BatchDownloadRequest(BaseModel):
+    filenames: List[str]
+
+
+@app.post("/download-all")
+def download_all(req: BatchDownloadRequest):
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name in req.filenames:
+            safe = Path(name).name
+            path = OUT_DIR / safe
+            if path.exists():
+                zf.write(path, safe)
+    buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="docling-results.zip"'},
+    )
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────

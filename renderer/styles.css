@@ -182,7 +182,20 @@ select.dl-preview-picker:focus { border-color: var(--dl-accent); }
 .dl-results-table tr:last-child td { border-bottom: none; }
 
 /* ── Downloads ─────────────────────────────────────────────────────────────── */
-.dl-download-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.dl-section-title--row { display: flex; align-items: center; justify-content: space-between; }
+.dl-section-title-label { display: flex; align-items: center; gap: 8px; }
+.dl-download-all-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; font-size: .82rem; font-weight: 600;
+  color: var(--dl-accent); background: rgba(79,70,229,.08);
+  border: 1px solid var(--dl-accent); border-radius: 8px;
+  cursor: pointer; transition: background .15s, transform .1s;
+  font-family: var(--dl-font);
+}
+.dl-download-all-btn:hover { background: rgba(79,70,229,.16); transform: translateY(-1px); }
+.dl-download-all-btn:active { transform: translateY(0); }
+.dl-download-all-btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; }
+.dl-download-list { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .dl-download-link { display: inline-flex; align-items: center; gap: 7px; font-size: .88rem;
   color: var(--dl-accent); text-decoration: none; padding: 7px 14px;
   border: 1px solid var(--dl-accent); border-radius: 8px;

@@ -29,8 +29,9 @@ const els = {
   previewPicker: document.getElementById('preview-picker'),
   previewContent:document.getElementById('preview-content'),
   resultsBody:   document.getElementById('results-body'),
-  downloads:     document.getElementById('dl-downloads'),
-  downloadList:  document.getElementById('download-list'),
+  downloads:       document.getElementById('dl-downloads'),
+  downloadList:    document.getElementById('download-list'),
+  downloadAllBtn:  document.getElementById('download-all-btn'),
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -202,6 +203,35 @@ async function downloadFile(filename) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
+}
+
+async function downloadAll() {
+  if (!state.downloadFiles.length) return;
+  els.downloadAllBtn.disabled = true;
+  els.downloadAllBtn.textContent = '打包中…';
+  try {
+    const resp = await fetch(`${state.baseUrl}/download-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filenames: state.downloadFiles }),
+    });
+    if (!resp.ok) throw new Error(`打包失败 (${resp.status})`);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'docling-results.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    setStatus('error', `批量下载失败：${err.message}`);
+  } finally {
+    els.downloadAllBtn.disabled = false;
+    els.downloadAllBtn.innerHTML =
+      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>全部下载 ZIP`;
+  }
 }
 
 // ── Device options ─────────────────────────────────────────────────────────────
@@ -417,7 +447,7 @@ async function init() {
   els.runBtn.addEventListener('click', handleConvert);
   els.cancelBtn.addEventListener('click', cancelConversion);
 
-  // Download links
+  // Individual download links
   els.downloadList.addEventListener('click', async (e) => {
     const a = e.target.closest('.dl-download-link');
     if (!a) return;
@@ -428,6 +458,9 @@ async function init() {
       setStatus('error', `下载失败：${err.message}`);
     }
   });
+
+  // Batch download all as ZIP
+  els.downloadAllBtn.addEventListener('click', downloadAll);
 }
 
 init();
