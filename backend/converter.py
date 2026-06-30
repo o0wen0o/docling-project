@@ -20,8 +20,7 @@ from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import InputFormat, ConversionStatus
 
 SUPPORTED_EXT = {".pdf", ".docx", ".pptx", ".xlsx", ".html", ".md", ".png", ".jpg", ".jpeg", ".tiff"}
-OUT_DIR = Path("output")
-OUT_DIR.mkdir(exist_ok=True)
+OUT_DIR = Path("output")  # server.py overrides this via DOCLING_OUT_DIR before first use
 
 _CONVERTER_CACHE: OrderedDict = OrderedDict()
 _CACHE_MAX = 2
@@ -112,6 +111,7 @@ def run_conversion(
     want_json: bool,
 ) -> Generator[dict, None, None]:
     """Synchronous generator yielding progress dicts consumed by the SSE layer."""
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     device, dev_label = resolve_device(device_choice)
     yield {"type": "init", "dev_label": dev_label}
 

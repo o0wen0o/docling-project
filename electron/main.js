@@ -22,6 +22,8 @@ function createWindow(port) {
     minHeight: 600,
     title: 'Docling Document Converter',
     backgroundColor: '#f8fafc',
+    icon: path.join(__dirname, '..', 'renderer', 'icons',
+      process.platform === 'darwin' ? 'mac/icon.icns' : 'win/icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

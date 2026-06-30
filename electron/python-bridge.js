@@ -9,10 +9,12 @@ let pythonProcess = null;
 
 function getPythonCmd() {
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'backend', 'server.exe');
+    const bin = process.platform === 'win32' ? 'server.exe' : 'server';
+    return path.join(process.resourcesPath, 'backend', bin);
   }
   // Dev: prefer .venv python, fall back to system python
-  const venv = path.join(__dirname, '..', '.venv', 'Scripts', 'python.exe');
+  const venvBin = process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python';
+  const venv = path.join(__dirname, '..', '.venv', venvBin);
   return fs.existsSync(venv) ? venv : 'python';
 }
 

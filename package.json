@@ -6,8 +6,12 @@
   "scripts": {
     "dev": "node electron-start.js",
     "start": "node electron-start.js",
+    "build:backend": "node build-backend.js",
     "dist": "electron-builder",
-    "dist:win": "electron-builder --win"
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "release": "node build-backend.js && electron-builder"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
@@ -29,15 +33,18 @@
       "node_modules/marked/lib/**"
     ],
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "renderer/icon.ico"
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "renderer/icons/win/icon.ico"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "renderer/icons/mac/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [{ "target": "AppImage", "arch": ["x64"] }],
+      "icon": "renderer/icons/png/512x512.png",
+      "category": "Office"
     },
     "nsis": {
       "oneClick": false,
