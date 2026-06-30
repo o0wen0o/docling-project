@@ -1,0 +1,250 @@
+/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --block-background-fill: #ffffff;
+  --border-color-primary: #e2e8f0;
+  --body-text-color-subdued: #64748b;
+  --body-text-color: #0f172a;
+  --background-fill-primary: #f8fafc;
+  --background-fill-secondary: #f1f5f9;
+
+  --dl-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --dl-accent: #4F46E5;
+  --dl-accent-hover: #4338CA;
+  --dl-r-card: 16px;
+  --dl-r-input: 10px;
+  --dl-gap: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --block-background-fill: #1e293b;
+    --border-color-primary: #334155;
+    --body-text-color-subdued: #94a3b8;
+    --body-text-color: #f1f5f9;
+    --background-fill-primary: #0f172a;
+    --background-fill-secondary: #1e293b;
+  }
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  font-family: var(--dl-font);
+  color: var(--body-text-color);
+  background: var(--background-fill-primary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── Scrollbar (subtle) ────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color-primary); border-radius: 3px; }
+
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+#dl-wrap { max-width: 1120px; margin: 0 auto; width: 100%; padding: 24px 20px 32px; }
+
+:focus-visible { outline: 2px solid var(--dl-accent) !important; outline-offset: 2px; border-radius: 6px; }
+
+/* ── Hero ──────────────────────────────────────────────────────────────────── */
+.dl-hero { display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 6px 2px 24px; }
+.dl-hero .dl-logo { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
+  border-radius: 16px; background: linear-gradient(135deg, #4f46e5, #2563eb); color: #fff;
+  box-shadow: 0 8px 22px rgba(79,70,229,.28); flex: 0 0 auto; }
+.dl-hero h1 { margin: 0; font-size: 1.7rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.15; }
+.dl-hero p { margin: 4px 0 0; font-size: .95rem; color: var(--body-text-color-subdued); }
+
+/* ── Two-column ────────────────────────────────────────────────────────────── */
+#dl-main { display: flex; gap: 24px; align-items: start; }
+.dl-col { display: flex; flex-direction: column; gap: var(--dl-gap); }
+.dl-col-left { flex: 5; min-width: 300px; }
+.dl-col-right { flex: 7; min-width: 360px; position: sticky; top: 16px; align-self: start; }
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.dl-card { border: 1px solid var(--border-color-primary); background: var(--block-background-fill);
+  border-radius: var(--dl-r-card); padding: 16px 18px 18px;
+  box-shadow: 0 1px 3px rgba(15,23,42,.05); }
+
+.dl-section-title { display: flex; align-items: center; gap: 8px; font-size: .82rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--body-text-color-subdued);
+  margin: 0 0 14px; }
+.dl-step { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+  border-radius: 999px; background: var(--dl-accent); color: #fff; font-size: .72rem; font-weight: 700;
+  flex: 0 0 auto; }
+
+/* ── Dropzone ──────────────────────────────────────────────────────────────── */
+.dropzone { border: 2px dashed var(--border-color-primary); border-radius: var(--dl-r-input);
+  padding: 28px 16px; text-align: center; cursor: pointer;
+  transition: border-color .2s, background .2s; position: relative; }
+.dropzone:hover, .dropzone.drag-over { border-color: var(--dl-accent); background: rgba(79,70,229,.04); }
+.dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  width: 100%; height: 100%; }
+.dropzone-icon { color: var(--body-text-color-subdued); margin-bottom: 10px; }
+.dropzone p { font-size: .88rem; color: var(--body-text-color-subdued); margin: 0; line-height: 1.6; }
+.dropzone p.drop-main { font-weight: 500; color: var(--body-text-color); font-size: .9rem; }
+
+.file-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+.file-list li { display: flex; align-items: center; gap: 8px; font-size: .83rem; padding: 6px 10px;
+  background: var(--background-fill-secondary); border-radius: 8px; }
+.file-list .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-list .file-size { font-size: .75rem; color: var(--body-text-color-subdued); white-space: nowrap; }
+
+/* ── Controls ──────────────────────────────────────────────────────────────── */
+.dl-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.dl-label { font-size: .875rem; font-weight: 500; }
+.dl-hint { font-size: .78rem; color: var(--body-text-color-subdued); }
+
+select.dl-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border-color-primary);
+  border-radius: var(--dl-r-input); background: var(--block-background-fill);
+  font-family: var(--dl-font); font-size: .9rem; color: var(--body-text-color);
+  cursor: pointer; outline: none; }
+select.dl-select:focus { border-color: var(--dl-accent); }
+
+.dl-checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+.dl-checkbox { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none; }
+.dl-checkbox input[type=checkbox] { width: 16px; height: 16px; margin-top: 3px; cursor: pointer;
+  accent-color: var(--dl-accent); flex: 0 0 auto; }
+.dl-checkbox-text { display: flex; flex-direction: column; gap: 2px; }
+.dl-checkbox-label { font-size: .9rem; font-weight: 500; }
+.dl-checkbox-hint { font-size: .78rem; color: var(--body-text-color-subdued); }
+
+/* ── Primary CTA ───────────────────────────────────────────────────────────── */
+button.dl-run { width: 100%; padding: 13px 20px; font-weight: 700; font-size: 1rem;
+  letter-spacing: .01em; cursor: pointer; border: none; border-radius: var(--dl-r-input);
+  background: var(--dl-accent); color: #fff;
+  box-shadow: 0 4px 14px rgba(79,70,229,.28);
+  transition: transform .15s, box-shadow .2s, background .15s;
+  font-family: var(--dl-font); }
+button.dl-run:hover { background: var(--dl-accent-hover);
+  transform: translateY(-1px); box-shadow: 0 6px 18px rgba(79,70,229,.36); }
+button.dl-run:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(79,70,229,.2); }
+button.dl-run:disabled { opacity: .6; cursor: not-allowed; transform: none !important;
+  box-shadow: 0 4px 14px rgba(79,70,229,.28) !important; }
+
+/* ── Status pill ───────────────────────────────────────────────────────────── */
+.dl-status-wrap { display: flex; min-height: 42px; align-items: center; }
+.dl-status { display: inline-flex; align-items: center; gap: 9px; font-size: .9rem; font-weight: 600;
+  padding: 11px 16px; border-radius: 12px; line-height: 1.3;
+  animation: dl-fade-in .25s ease both; }
+.dl-status svg { flex: 0 0 auto; }
+.dl-status[data-kind=idle]    { color: var(--body-text-color-subdued); background: rgba(148,163,184,.15); }
+.dl-status[data-kind=running] { color: #1D4ED8; background: rgba(37,99,235,.12); }
+.dl-status[data-kind=done]    { color: #15803D; background: rgba(22,163,74,.12); }
+.dl-status[data-kind=warn]    { color: #B45309; background: rgba(217,119,6,.12); }
+.dl-status[data-kind=error]   { color: #B91C1C; background: rgba(220,38,38,.12); }
+.dl-spin { animation: dl-rot .9s linear infinite; transform-origin: center; }
+@keyframes dl-rot { to { transform: rotate(360deg); } }
+@keyframes dl-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+/* ── Tabs ──────────────────────────────────────────────────────────────────── */
+.dl-tab-nav { display: flex; gap: 4px; border-bottom: 1px solid var(--border-color-primary);
+  margin-bottom: 14px; }
+.dl-tab-btn { padding: 8px 16px; font-size: .88rem; font-weight: 500; cursor: pointer;
+  background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  color: var(--body-text-color-subdued); font-family: var(--dl-font);
+  transition: color .15s, border-color .15s; border-radius: 6px 6px 0 0; }
+.dl-tab-btn:hover { color: var(--body-text-color); }
+.dl-tab-btn.active { color: var(--dl-accent); border-bottom-color: var(--dl-accent); font-weight: 600; }
+.dl-tab-panel { display: none; }
+.dl-tab-panel.active { display: block; }
+
+/* ── Preview ───────────────────────────────────────────────────────────────── */
+select.dl-preview-picker { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color-primary);
+  border-radius: var(--dl-r-input); background: var(--block-background-fill);
+  font-family: var(--dl-font); font-size: .88rem; color: var(--body-text-color);
+  margin-bottom: 12px; cursor: pointer; outline: none; }
+select.dl-preview-picker:focus { border-color: var(--dl-accent); }
+
+.dl-preview-content { overflow-y: auto; max-height: 460px; min-height: 80px; }
+.dl-preview-content pre { white-space: pre-wrap; word-break: break-word;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: .82rem; line-height: 1.65; padding: 14px;
+  background: var(--background-fill-secondary); border-radius: var(--dl-r-input);
+  color: var(--body-text-color); }
+
+.dl-empty { display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center; color: var(--body-text-color-subdued); padding: 48px 16px; }
+.dl-empty svg { opacity: .3; }
+.dl-empty p { font-size: .9rem; line-height: 1.6; }
+
+/* ── Results table ─────────────────────────────────────────────────────────── */
+.dl-results-wrap { overflow: auto; max-height: 460px; border-radius: var(--dl-r-input);
+  border: 1px solid var(--border-color-primary); }
+.dl-results-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.dl-results-table th { padding: 10px 12px; text-align: left; font-size: .76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--body-text-color-subdued);
+  background: var(--background-fill-secondary); border-bottom: 1px solid var(--border-color-primary);
+  white-space: nowrap; }
+.dl-results-table td { padding: 9px 12px; border-bottom: 1px solid var(--border-color-primary);
+  vertical-align: middle; word-break: break-word; }
+.dl-results-table tr:last-child td { border-bottom: none; }
+
+/* ── Downloads ─────────────────────────────────────────────────────────────── */
+.dl-download-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.dl-download-link { display: inline-flex; align-items: center; gap: 7px; font-size: .88rem;
+  color: var(--dl-accent); text-decoration: none; padding: 7px 14px;
+  border: 1px solid var(--dl-accent); border-radius: 8px;
+  transition: background .15s; }
+.dl-download-link:hover { background: rgba(79,70,229,.08); }
+.dl-download-link svg { flex: 0 0 auto; }
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+.dl-foot { font-size: .78rem; color: var(--body-text-color-subdued); padding: 20px 4px 4px;
+  line-height: 1.8; text-align: center; }
+.dl-foot code { font-size: .74rem; background: var(--background-fill-secondary);
+  padding: 1px 5px; border-radius: 4px; }
+
+/* ── Connecting overlay ────────────────────────────────────────────────────── */
+#dl-connecting { position: fixed; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  background: var(--background-fill-primary); z-index: 100; }
+#dl-connecting.hidden { display: none; }
+#dl-connecting p { font-size: 1rem; color: var(--body-text-color-subdued); }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  #dl-main { flex-direction: column; }
+  .dl-col-right { position: static; }
+}
+
+/* ── Cancel button ─────────────────────────────────────────────────────────── */
+button.dl-cancel { width: 100%; padding: 13px 20px; border-radius: var(--dl-r-input);
+  font-size: .95rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color-primary);
+  background: transparent; color: var(--body-text-color-subdued);
+  transition: background .15s, color .15s; }
+button.dl-cancel:hover { background: var(--background-fill-secondary); color: var(--body-text-color); }
+
+/* ── Markdown preview body ─────────────────────────────────────────────────── */
+.dl-md-body { padding: 8px 2px; font-size: .875rem; line-height: 1.75;
+  color: var(--body-text-color); overflow-wrap: break-word; }
+.dl-md-body h1,.dl-md-body h2,.dl-md-body h3,.dl-md-body h4 {
+  font-weight: 700; margin: 1.1em 0 .4em; line-height: 1.25; }
+.dl-md-body h1 { font-size: 1.5em; } .dl-md-body h2 { font-size: 1.2em; }
+.dl-md-body h3 { font-size: 1em; }
+.dl-md-body p { margin: .6em 0; }
+.dl-md-body a { color: var(--dl-accent); }
+.dl-md-body ul,.dl-md-body ol { padding-left: 1.4em; margin: .5em 0; }
+.dl-md-body li { margin: .2em 0; }
+.dl-md-body blockquote { border-left: 3px solid var(--border-color-primary);
+  padding-left: 1em; margin: .6em 0; color: var(--body-text-color-subdued); font-style: italic; }
+.dl-md-body code { font-family: 'Cascadia Code', 'Fira Mono', monospace;
+  font-size: .82em; background: var(--background-fill-secondary);
+  padding: 1px 5px; border-radius: 4px; }
+.dl-md-body pre { background: var(--background-fill-secondary); border-radius: 8px;
+  padding: 12px 14px; overflow-x: auto; margin: .7em 0; }
+.dl-md-body pre code { background: none; padding: 0; }
+.dl-md-body table { border-collapse: collapse; width: 100%; margin: .7em 0;
+  font-size: .83em; overflow-x: auto; display: block; }
+.dl-md-body th,.dl-md-body td { border: 1px solid var(--border-color-primary);
+  padding: 5px 10px; text-align: left; }
+.dl-md-body th { background: var(--background-fill-secondary); font-weight: 600; }
+.dl-md-body img { max-width: 100%; border-radius: 6px; }
+.dl-md-body hr { border: none; border-top: 1px solid var(--border-color-primary); margin: 1em 0; }
+
+/* ── Reduced motion ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dl-spin { animation: none; }
+  .dl-card, button.dl-run, button.dl-cancel, .dl-status, .dropzone { transition: none !important; animation: none !important; }
+}

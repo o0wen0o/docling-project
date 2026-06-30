@@ -1,0 +1,54 @@
+{
+  "name": "docling-desktop",
+  "version": "0.1.0",
+  "description": "Docling document converter — Electron desktop app",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "node electron-start.js",
+    "start": "node electron-start.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^42.5.1",
+    "electron-builder": "^24.0.0"
+  },
+  "dependencies": {
+    "marked": "^18.0.5"
+  },
+  "build": {
+    "appId": "com.docling.desktop",
+    "productName": "Docling Converter",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**",
+      "renderer/**",
+      "node_modules/marked/lib/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "renderer/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "extraResources": [
+      {
+        "from": "backend-dist/",
+        "to": "backend/"
+      }
+    ]
+  }
+}

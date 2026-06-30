@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- connect-src tightened to actual API origin at runtime by app.js -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src *;">
+  <title>Docling 文档转换器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Connecting overlay: visible while Python starts, hidden once ready (Phase 2+) -->
+<div id="dl-connecting">
+  <svg class="dl-spin" width="36" height="36" viewBox="0 0 24 24" fill="none"
+       stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+  </svg>
+  <p>正在启动后端…</p>
+</div>
+
+<div id="dl-wrap">
+
+  <!-- ── Hero ── -->
+  <div class="dl-hero">
+    <div class="dl-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <path d="M14 2v6h6"/>
+        <path d="M8 13h8M8 17h5"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Docling 文档转换器</h1>
+      <p>把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON）。</p>
+    </div>
+  </div>
+
+  <!-- ── Two-column main ── -->
+  <div id="dl-main">
+
+    <!-- Left: inputs -->
+    <div class="dl-col dl-col-left">
+
+      <!-- Step 1: Upload -->
+      <div class="dl-card">
+        <div class="dl-section-title">
+          <span class="dl-step">1</span> 上传文件
+        </div>
+        <div class="dropzone" id="dropzone" role="button" tabindex="0"
+             aria-label="文件上传区域，可拖放或点击选择">
+          <input type="file" id="file-input" multiple
+                 accept=".pdf,.docx,.pptx,.xlsx,.html,.md,.png,.jpg,.jpeg,.tiff"
+                 aria-label="选择文件">
+          <div class="dropzone-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <p class="drop-main">拖入或点击选择（可多选）</p>
+          <p>.pdf .docx .pptx .xlsx .html .md .png .jpg .jpeg .tiff</p>
+        </div>
+        <ul id="file-list" class="file-list"></ul>
+      </div>
+
+      <!-- Step 2: Options -->
+      <div class="dl-card">
+        <div class="dl-section-title">
+          <span class="dl-step">2</span> 选项
+        </div>
+
+        <div class="dl-field">
+          <label class="dl-label" for="device-select">计算设备</label>
+          <select class="dl-select" id="device-select" aria-describedby="device-hint"></select>
+          <span class="dl-hint" id="device-hint">连接后端后自动检测</span>
+        </div>
+
+        <div class="dl-checkbox-group">
+          <label class="dl-checkbox">
+            <input type="checkbox" id="do-ocr" checked>
+            <span class="dl-checkbox-text">
+              <span class="dl-checkbox-label">OCR</span>
+              <span class="dl-checkbox-hint">扫描件 / 图片型 PDF 需要</span>
+            </span>
+          </label>
+          <label class="dl-checkbox">
+            <input type="checkbox" id="do-tables" checked>
+            <span class="dl-checkbox-text">
+              <span class="dl-checkbox-label">表格结构识别</span>
+              <span class="dl-checkbox-hint">还原表格行列结构</span>
+            </span>
+          </label>
+          <label class="dl-checkbox">
+            <input type="checkbox" id="want-json">
+            <span class="dl-checkbox-text">
+              <span class="dl-checkbox-label">同时导出 JSON</span>
+              <span class="dl-checkbox-hint">结构化数据，便于二次处理</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <button class="dl-run" id="run-btn" type="button">开始转换</button>
+      <button class="dl-cancel" id="cancel-btn" type="button" style="display:none">取消转换</button>
+
+      <!-- Status pill -->
+      <div class="dl-status-wrap" id="status-wrap" role="status" aria-live="polite"></div>
+
+    </div>
+
+    <!-- Right: results (sticky) -->
+    <div class="dl-col dl-col-right" id="dl-right">
+
+      <!-- Step 3: Results -->
+      <div class="dl-card" id="dl-results">
+        <div class="dl-section-title">
+          <span class="dl-step">3</span> 结果
+        </div>
+
+        <div class="dl-tab-nav" role="tablist">
+          <button class="dl-tab-btn active" data-tab="preview"
+                  role="tab" aria-selected="true" aria-controls="tab-preview">预览</button>
+          <button class="dl-tab-btn" data-tab="details"
+                  role="tab" aria-selected="false" aria-controls="tab-details">结果明细</button>
+        </div>
+
+        <!-- Preview tab -->
+        <div class="dl-tab-panel active" id="tab-preview" data-tab="preview" role="tabpanel">
+          <select class="dl-preview-picker" id="preview-picker"
+                  style="display:none" aria-label="选择要预览的文件"></select>
+          <div class="dl-preview-content" id="preview-content">
+            <div class="dl-empty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 2v6h6"/>
+                <path d="M8 13h8M8 17h5"/>
+              </svg>
+              <p>上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details tab -->
+        <div class="dl-tab-panel" id="tab-details" data-tab="details" role="tabpanel">
+          <div class="dl-results-wrap">
+            <table class="dl-results-table">
+              <thead>
+                <tr><th>状态</th><th>文件</th><th>输出</th></tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Downloads (hidden until files are ready) -->
+      <div class="dl-card" id="dl-downloads" style="display:none">
+        <div class="dl-section-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          下载结果
+        </div>
+        <ul class="dl-download-list" id="download-list"></ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dl-foot">
+    支持格式：
+    <code>.pdf</code> <code>.docx</code> <code>.pptx</code> <code>.xlsx</code>
+    <code>.html</code> <code>.md</code> <code>.png</code> <code>.jpg</code>
+    <code>.jpeg</code> <code>.tiff</code>
+    <br>首次运行会下载模型，需联网。结果保存在 <code>output/</code>。
+  </div>
+
+</div>
+
+<script src="marked.umd.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

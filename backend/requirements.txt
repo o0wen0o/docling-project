@@ -1,0 +1,14 @@
+# Backend-only deps — no gradio
+--extra-index-url https://download.pytorch.org/whl/xpu
+
+torch==2.11.0+xpu
+torchvision==0.26.0+xpu
+torchaudio==2.11.0+xpu
+
+docling==2.102.2
+
+transformers==5.6.2
+
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9

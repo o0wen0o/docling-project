@@ -20,3 +20,9 @@ output/
 # IDE
 .vscode/
 .idea/
+
+# Node / Electron
+node_modules/
+dist/
+build/
+backend-dist/
