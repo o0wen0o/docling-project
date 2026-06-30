@@ -2,6 +2,7 @@
 import sys
 import gc
 import json
+import threading
 import time
 from collections import OrderedDict
 from pathlib import Path
@@ -13,11 +14,51 @@ try:
 except (AttributeError, ValueError):
     pass
 
-import torch
-from docling.datamodel.accelerator_options import AcceleratorOptions, AcceleratorDevice
-from docling.datamodel.pipeline_options import PdfPipelineOptions, RapidOcrOptions
-from docling.document_converter import DocumentConverter, PdfFormatOption
-from docling.datamodel.base_models import InputFormat, ConversionStatus
+# Heavy deps (torch + the docling pipeline tree) take ~30s to import cold. We
+# defer them so the server can print READY and accept the window immediately;
+# ensure_loaded() pulls them in — called from a background warm thread right
+# after boot, and again (as a cheap no-op, or a blocking wait) on first convert.
+torch = None
+AcceleratorOptions = AcceleratorDevice = None
+PdfPipelineOptions = RapidOcrOptions = None
+DocumentConverter = PdfFormatOption = None
+InputFormat = ConversionStatus = None
+
+_load_lock = threading.Lock()
+_loaded = False
+
+
+def ensure_loaded():
+    """Import torch + docling once. Thread-safe; blocks concurrent callers
+    until the first import finishes, then is a no-op."""
+    global _loaded, torch
+    global AcceleratorOptions, AcceleratorDevice, PdfPipelineOptions, RapidOcrOptions
+    global DocumentConverter, PdfFormatOption, InputFormat, ConversionStatus
+    if _loaded:
+        return
+    with _load_lock:
+        if _loaded:
+            return
+        import torch as _torch
+        from docling.datamodel.accelerator_options import (
+            AcceleratorOptions as _AO, AcceleratorDevice as _AD,
+        )
+        from docling.datamodel.pipeline_options import (
+            PdfPipelineOptions as _PPO, RapidOcrOptions as _ROO,
+        )
+        from docling.document_converter import (
+            DocumentConverter as _DC, PdfFormatOption as _PFO,
+        )
+        from docling.datamodel.base_models import (
+            InputFormat as _IF, ConversionStatus as _CS,
+        )
+        torch = _torch
+        AcceleratorOptions, AcceleratorDevice = _AO, _AD
+        PdfPipelineOptions, RapidOcrOptions = _PPO, _ROO
+        DocumentConverter, PdfFormatOption = _DC, _PFO
+        InputFormat, ConversionStatus = _IF, _CS
+        _loaded = True
+
 
 SUPPORTED_EXT = {".pdf", ".docx", ".pptx", ".xlsx", ".html", ".md", ".png", ".jpg", ".jpeg", ".tiff"}
 OUT_DIR = Path("output")  # server.py overrides this via DOCLING_OUT_DIR before first use
@@ -27,10 +68,13 @@ _CACHE_MAX = 2
 
 
 def has_xpu() -> bool:
+    ensure_loaded()
     return hasattr(torch, "xpu") and torch.xpu.is_available()
 
 
 def _free_device_memory():
+    if torch is None:
+        return
     try:
         gc.collect()
         if hasattr(torch, "xpu") and torch.xpu.is_available():
@@ -42,6 +86,7 @@ def _free_device_memory():
 
 
 def device_info():
+    ensure_loaded()
     if has_xpu():
         return AcceleratorDevice.XPU, f"Intel GPU (XPU) · {torch.xpu.get_device_name(0)}"
     if torch.cuda.is_available():
@@ -49,12 +94,14 @@ def device_info():
     return AcceleratorDevice.CPU, "CPU · No GPU detected, conversion will be slow"
 
 
-DEVICE_MAP = {
-    "auto": None,
-    "xpu": AcceleratorDevice.XPU,
-    "cuda": AcceleratorDevice.CUDA,
-    "cpu": AcceleratorDevice.CPU,
-}
+def _device_map():
+    # Built lazily — AcceleratorDevice is None until ensure_loaded() runs.
+    return {
+        "auto": None,
+        "xpu": AcceleratorDevice.XPU,
+        "cuda": AcceleratorDevice.CUDA,
+        "cpu": AcceleratorDevice.CPU,
+    }
 
 DEVICE_LABELS = {
     "auto": "Auto Detect",
@@ -65,7 +112,8 @@ DEVICE_LABELS = {
 
 
 def resolve_device(choice: str):
-    dev = DEVICE_MAP.get(choice)
+    ensure_loaded()
+    dev = _device_map().get(choice)
     if dev is None:
         return device_info()
     labels = {

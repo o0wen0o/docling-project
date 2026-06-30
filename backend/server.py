@@ -25,18 +25,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 
-import torch
+# converter is import-light now: torch + docling are deferred behind
+# converter.ensure_loaded() so this module loads (and READY prints) in ~1s.
+import converter
 from converter import DEVICE_LABELS, device_info, has_xpu, run_conversion, shutdown
 
 # Packaged mode: Electron sets DOCLING_OUT_DIR to app.getPath('userData')/output
 _out_env = os.environ.get("DOCLING_OUT_DIR")
 if _out_env:
     from pathlib import Path as _P
-    import converter as _conv
-    _conv.OUT_DIR = _P(_out_env)
-    _conv.OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-from converter import OUT_DIR
+    converter.OUT_DIR = _P(_out_env)
+    converter.OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI()
 
@@ -62,13 +61,13 @@ def _find_free_port() -> int:
 
 @app.get("/device")
 def get_device():
-    _, auto_label = device_info()
+    _, auto_label = device_info()  # triggers converter.ensure_loaded()
     options = []
     for key, label in DEVICE_LABELS.items():
         available = True
         if key == "xpu" and not has_xpu():
             available = False
-        if key == "cuda" and not torch.cuda.is_available():
+        if key == "cuda" and not converter.torch.cuda.is_available():
             available = False
         options.append({"key": key, "label": label, "available": available})
     return {"auto_label": auto_label, "options": options}
@@ -146,7 +145,7 @@ async def cancel_job(job_id: str):
 @app.get("/download/{filename}")
 def download_file(filename: str):
     safe = Path(filename).name  # strip any path traversal
-    path = OUT_DIR / safe
+    path = converter.OUT_DIR / safe
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, filename=safe)
@@ -162,7 +161,7 @@ def download_all(req: BatchDownloadRequest):
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for name in req.filenames:
             safe = Path(name).name
-            path = OUT_DIR / safe
+            path = converter.OUT_DIR / safe
             if path.exists():
                 zf.write(path, safe)
     buf.seek(0)
@@ -183,10 +182,23 @@ def _shutdown_handler(*_):
 signal.signal(signal.SIGTERM, _shutdown_handler)
 
 if __name__ == "__main__":
+    import threading
     import uvicorn
 
     port = _find_free_port()
+    # Report ready immediately — heavy imports (torch + docling, ~30s cold) are
+    # deferred. The Electron window opens now; we warm the converter in the
+    # background so the first /convert isn't paying the import cost.
     print(f"READY {port}", flush=True)
+
+    def _warm():
+        try:
+            converter.ensure_loaded()
+            print("[warm] converter ready", flush=True)
+        except Exception as exc:  # don't crash the server if warm fails
+            print(f"[warm] failed: {exc}", flush=True)
+
+    threading.Thread(target=_warm, daemon=True).start()
 
     try:
         uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
