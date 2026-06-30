@@ -15,7 +15,7 @@ except (AttributeError, ValueError):
 
 import torch
 from docling.datamodel.accelerator_options import AcceleratorOptions, AcceleratorDevice
-from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.datamodel.pipeline_options import PdfPipelineOptions, RapidOcrOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.base_models import InputFormat, ConversionStatus
 
@@ -84,6 +84,13 @@ def get_converter(device, do_ocr: bool, do_tables: bool, page_batch: int = 4):
 
     opts = PdfPipelineOptions()
     opts.do_ocr = do_ocr
+    # Pin the OCR engine instead of docling's OcrAutoOptions probe. Auto-probe
+    # resolves against whatever rapidocr is installed; a newer rapidocr default
+    # (torch + PP-OCRv6) isn't in docling 2.102.2's bundled model paths and dies
+    # with "Unsupported configuration: torch.PP-OCRv6.det.small". The torch
+    # backend matches the CPU torch we install (no onnxruntime) and uses the
+    # PP-OCRv4 paths docling ships.
+    opts.ocr_options = RapidOcrOptions(backend="torch")
     opts.do_table_structure = do_tables
     opts.accelerator_options = AcceleratorOptions(device=device)
     try:

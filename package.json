@@ -8,6 +8,7 @@
     "start": "node electron-start.js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
+    "postdist:win": "node run-installer.js",
     "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux"
   },

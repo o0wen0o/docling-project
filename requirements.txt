@@ -14,6 +14,13 @@ torchvision==0.27.1+cpu
 # docling pulls docling-core / ibm-models / parse / numpy / pandas / pillow / safetensors
 docling==2.102.2
 
+# OCR engine — PIN rapidocr. docling 2.102.2 bundles model paths for the PP-OCRv4
+# catalog. Leaving rapidocr unpinned lets the venv pull a newer release whose
+# model catalog flips to PP-OCRv6, which this docling build can't resolve →
+# "Unsupported configuration: torch.PP-OCRv6.det.small". 3.8.4's catalog tops out
+# at PP-OCRv5, so the v4 paths docling requests always resolve.
+rapidocr==3.8.4
+
 transformers==5.6.2
 
 # FastAPI backend (Electron app talks to this over 127.0.0.1)
