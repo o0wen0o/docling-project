@@ -15,7 +15,7 @@
 
 - **Python 3.10 或更高版本**，且加入 PATH（应用与开发模式都需要）。
   从 <https://www.python.org/downloads/> 下载，Windows 安装时务必勾选 **“Add Python to PATH”**。
-- Node.js 18+（运行 / 打包 Electron）
+- Node.js **22.12+**（运行 / 打包 Electron；`electron@42` 的 engines 要求 ≥22.12.0，低版本会有 EBADENGINE 警告且可能打包失败）
 - torch 为 **CPU 构建**（`+cpu`）。XPU/CUDA 构建会拉入无法打包的 SYCL/MKL DLL 链，故统一用 CPU。
 
 ---
@@ -94,8 +94,11 @@ curl -N http://127.0.0.1:<port>/convert/<job_id>/events
 目标机器需自备 Python 3.10+；依赖在首次运行时由应用安装（应用内有界面与实时日志）。
 
 ```powershell
+npm install        # 若还没装过依赖（electron-builder 在 node_modules 里）
 npm run dist:win
 ```
+
+> 没跑过 `npm install` 直接 `npm run dist:win` 会报 `'electron-builder' is not recognized`。先装依赖。
 
 `electron-builder` 会打包前端，并把 `backend/`(仅 .py) 与 `requirements.txt` 作为 extraResources 打入。
 安装包很小（依赖与 Python 运行时都不在包内）。
@@ -180,6 +183,8 @@ docling-project/
 │  ├─ app.js          UI 逻辑 + 安装流程（IPC 握手）
 │  ├─ icons.js        Lucide SVG
 │  └─ marked.umd.js   vendored Markdown 渲染器
+├─ electron-start.js  npm start/dev 入口：设环境变量后拉起 electron
+├─ run-installer.js   postdist:win 钩子：自动运行 dist/ 里最新的 Setup.exe
 ├─ requirements.txt   后端依赖（CPU torch）
 ├─ convert.py         CLI 工具（保留）
 └─ app.py             Gradio UI（保留，待移除）
