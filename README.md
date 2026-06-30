@@ -108,6 +108,58 @@ npm run dist:win
 > 应用启动时会自检：缺 Python 会引导你去 python.org 安装，缺依赖会一键安装到独立环境。
 > 首次安装依赖与首次转换均需联网。
 
+### 文件去向（`dist:win` 之后东西装在哪）
+
+分三处，互不混淆：
+
+**1. 构建产物** — `npm run dist:win` 生成，在仓库内：
+
+```
+dist/
+├─ Docling Converter Setup <版本>.exe   ← 安装程序（postdist 自动运行）
+├─ win-unpacked/                        ← 打包前的原始应用
+└─ (*.blockmap, *.yml)
+```
+
+**2. 安装目标** — 用户点完安装程序后写入（per-user，无需管理员）：
+
+```
+%LOCALAPPDATA%\Programs\Docling Converter\
+= C:\Users\<你>\AppData\Local\Programs\Docling Converter\
+├─ Docling Converter.exe        ← 应用本体
+├─ resources\
+│  ├─ backend\*.py              ← server.py / converter.py / preflight.py
+│  └─ requirements.txt
+└─ (Electron 运行时、dll)
+```
+
+装完这一步后，这份是自包含副本，仓库可删。
+
+**3. 运行时数据** — 首次启动 + 首次转换时生成（可写的用户目录）：
+
+```
+%APPDATA%\docling-desktop\
+= C:\Users\<你>\AppData\Roaming\docling-desktop\
+├─ venv\        ← pip 安装的后端依赖（torch、docling，数 GB）
+├─ models\      ← Docling 模型下载到此（HF_HOME）
+└─ output\      ← 转换结果 .md / .json
+```
+
+| 由谁生成 | 位置 | 大小 | 在仓库内？ |
+|---|---|---|---|
+| `dist:win` | `dist/` | ~100 MB | 是 |
+| 点安装程序 | `%LOCALAPPDATA%\Programs\` | ~250 MB | 否 |
+| 首次运行 | `%APPDATA%\docling-desktop\`（`venv` + `models`） | ~3–5 GB | 否 |
+
+> 关键：**依赖与模型都不在安装包内**。安装包只有 Electron 前端 + 后端 .py 源码，故体积小；
+> 重的部分（venv、模型）在首次运行时用系统 Python 装进 `%APPDATA%`。
+
+**清理 / 重测**：删掉受管 venv 即可让应用重新走「首次安装」流程：
+
+```powershell
+Remove-Item -Recurse -Force "$env:APPDATA\docling-desktop\venv"
+```
+
 ---
 
 ## 架构
