@@ -1,18 +1,22 @@
-# Docling 文档转换 — 项目依赖
-# 安装: .venv\Scripts\python.exe -m pip install -r requirements.txt
+# Docling document converter — backend dependencies (CPU-only)
 #
-# torch 系列是 Intel XPU 构建 (2.x+xpu)，不在默认 PyPI，需走 PyTorch XPU 源。
-# 若去掉下面这行 extra-index-url，会装到 CPU 版 → 丢失 Intel GPU 加速。
---extra-index-url https://download.pytorch.org/whl/xpu
+# The desktop app installs these into a managed venv on first run.
+# Manual install:
+#   python -m pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+#
+# torch is the CPU build from the PyTorch CPU index (no Intel XPU / CUDA).
+# The XPU build pulls a SYCL/MKL DLL chain that does not survive packaging.
+--extra-index-url https://download.pytorch.org/whl/cpu
 
-torch==2.11.0+xpu
-torchvision==0.26.0+xpu
-torchaudio==2.11.0+xpu
+torch==2.12.1+cpu
+torchvision==0.27.1+cpu
 
-# docling 会自动带入 docling-core / ibm-models / parse / numpy / pandas / pillow / safetensors
+# docling pulls docling-core / ibm-models / parse / numpy / pandas / pillow / safetensors
 docling==2.102.2
 
-# gradio 会自动带入 gradio_client
-gradio==6.13.0
-
 transformers==5.6.2
+
+# FastAPI backend (Electron app talks to this over 127.0.0.1)
+fastapi==0.137.1
+uvicorn==0.49.0
+python-multipart==0.0.32

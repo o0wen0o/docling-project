@@ -221,6 +221,58 @@ select.dl-preview-picker:focus { border-color: var(--dl-accent); }
 #dl-connecting.hidden { display: none; }
 #dl-connecting p { font-size: 1rem; color: var(--body-text-color-subdued); }
 
+/* ── First-run setup screen ───────────────────────────────────────────────── */
+#dl-setup { position: fixed; inset: 0; display: flex; align-items: center;
+  justify-content: center; padding: 24px; overflow-y: auto;
+  background: var(--background-fill-primary); z-index: 110; }
+#dl-setup.hidden { display: none; }
+.dl-setup-card { width: 100%; max-width: 560px; background: var(--block-background-fill);
+  border: 1px solid var(--border-color-primary); border-radius: var(--dl-r-card);
+  padding: 32px; box-shadow: 0 8px 30px rgba(0,0,0,.06); }
+.dl-setup-icon { width: 56px; height: 56px; border-radius: 14px;
+  background: var(--background-fill-secondary); display: flex; align-items: center;
+  justify-content: center; margin-bottom: 16px; }
+.dl-setup-card h2 { margin: 0 0 8px; font-size: 1.35rem; color: var(--body-text-color); }
+.dl-setup-lead { margin: 0 0 20px; font-size: .95rem; line-height: 1.55;
+  color: var(--body-text-color-subdued); }
+.dl-setup-missing { background: var(--background-fill-secondary);
+  border-radius: var(--dl-r-input); padding: 14px 16px; margin-bottom: 20px; }
+.dl-setup-missing-label { font-size: .8rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--body-text-color-subdued); }
+#dl-setup-list { margin: 8px 0 0; padding-left: 18px; font-size: .9rem;
+  color: var(--body-text-color); }
+#dl-setup-list li { margin: 3px 0; }
+.dl-cta { width: 100%; padding: 13px 20px; border-radius: var(--dl-r-input);
+  font-size: .95rem; font-weight: 600; cursor: pointer; border: none;
+  background: var(--dl-accent); color: #fff; font-family: var(--dl-font);
+  transition: background .15s; }
+.dl-cta:hover { background: var(--dl-accent-hover); }
+.dl-cta:disabled { opacity: .6; cursor: not-allowed; }
+#dl-setup-progress { margin-top: 20px; }
+#dl-setup-progress.hidden { display: none; }
+.dl-setup-spinner { display: flex; align-items: center; gap: 10px; font-size: .9rem;
+  color: var(--body-text-color-subdued); margin-bottom: 12px; }
+#dl-setup-log { max-height: 240px; overflow-y: auto; margin: 0; padding: 12px 14px;
+  background: var(--background-fill-secondary); border-radius: var(--dl-r-input);
+  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace; font-size: 12px;
+  line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+  color: var(--body-text-color); }
+.dl-setup-error { margin: 16px 0 0; padding: 12px 14px; border-radius: var(--dl-r-input);
+  background: rgba(239,68,68,.1); color: #ef4444; font-size: .9rem; }
+.dl-setup-error.hidden { display: none; }
+
+/* Python-missing variant */
+.dl-setup-python.hidden, #dl-setup-deps.hidden, .dl-setup-lead.hidden { display: none; }
+.dl-setup-python-msg { margin: 0 0 16px; font-size: .95rem; line-height: 1.55;
+  color: var(--body-text-color); }
+.dl-setup-steps { margin: 0 0 20px; padding-left: 20px; font-size: .9rem;
+  line-height: 1.7; color: var(--body-text-color); }
+.dl-setup-steps li { margin: 4px 0; }
+.dl-setup-steps code { padding: 1px 6px; border-radius: 5px;
+  background: var(--background-fill-secondary); font-size: .85em; }
+.dl-setup-pyinfo { margin: 0 0 16px; font-size: .82rem;
+  color: var(--body-text-color-subdued); }
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   #dl-main { flex-direction: column; }

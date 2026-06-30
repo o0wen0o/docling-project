@@ -6,12 +6,10 @@
   "scripts": {
     "dev": "node electron-start.js",
     "start": "node electron-start.js",
-    "build:backend": "node build-backend.js",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux",
-    "release": "node build-backend.js && electron-builder"
+    "dist:linux": "electron-builder --linux"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
@@ -53,8 +51,20 @@
     },
     "extraResources": [
       {
-        "from": "backend-dist/",
-        "to": "backend/"
+        "from": "backend/",
+        "to": "backend/",
+        "filter": [
+          "**/*.py",
+          "!build/**",
+          "!dist/**",
+          "!__pycache__/**",
+          "!**/__pycache__/**",
+          "!*.spec"
+        ]
+      },
+      {
+        "from": "requirements.txt",
+        "to": "requirements.txt"
       }
     ]
   }

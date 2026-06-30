@@ -5,6 +5,21 @@ const STRINGS = {
   en: {
     title:            'Docling Document Converter',
     connecting:       'Starting backend…',
+    'setup.title':    'One-time setup',
+    'setup.lead':     'Before first use, the app needs to install its document-processing engine. This downloads ~700 MB and runs once. Internet connection required.',
+    'setup.missing':  'Components to install:',
+    'setup.install':  'Install & Continue',
+    'setup.pyinfo':   (ver) => `Using system Python ${ver}.`,
+    'python.title':   'Python required',
+    'python.none':    'This app needs Python 3.10 or newer, but none was found on your system. Install it, then re-check.',
+    'python.old':     (ver) => `Found Python ${ver}, but this app needs 3.10 or newer. Install a newer version, then re-check.`,
+    'python.step1':   'Download Python 3.10 or newer from <code>python.org/downloads</code>',
+    'python.step2':   'During install, tick <strong>"Add Python to PATH."</strong>',
+    'python.step3':   'Quit and reopen this app (or click Re-check below).',
+    'python.recheck': 'Re-check',
+    'setup.installing':'Installing… you can watch progress below.',
+    'setup.failed':   (msg) => `Setup failed: ${msg}`,
+    'setup.retry':    'Retry',
     'hero.title':     'Docling Document Converter',
     'hero.subtitle':  'Convert PDF / Word / PPT / Excel / HTML / Images to clean Markdown (JSON optional).',
     'step.upload':    'Upload Files',
@@ -56,6 +71,21 @@ const STRINGS = {
   zh: {
     title:            'Docling 文档转换器',
     connecting:       '正在启动后端…',
+    'setup.title':    '首次安装',
+    'setup.lead':     '首次使用前，应用会把文档处理引擎安装到独立环境中。需下载数百 MB，仅运行一次，需联网。',
+    'setup.missing':  '待安装组件：',
+    'setup.install':  '安装并继续',
+    'setup.pyinfo':   (ver) => `使用系统 Python ${ver}。`,
+    'python.title':   '需要 Python',
+    'python.none':    '本应用需要 Python 3.10 或更高版本，但系统中未找到。请先安装，然后重新检测。',
+    'python.old':     (ver) => `检测到 Python ${ver}，但本应用需要 3.10 或更高版本。请安装更新版本后重新检测。`,
+    'python.step1':   '从 <code>python.org/downloads</code> 下载 Python 3.10 或更高版本',
+    'python.step2':   '安装时勾选 <strong>“Add Python to PATH”（加入 PATH）</strong>。',
+    'python.step3':   '退出并重新打开本应用（或点击下方「重新检测」）。',
+    'python.recheck': '重新检测',
+    'setup.installing':'正在安装…可在下方查看进度。',
+    'setup.failed':   (msg) => `安装失败：${msg}`,
+    'setup.retry':    '重试',
     'hero.title':     'Docling 文档转换器',
     'hero.subtitle':  '把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON）。',
     'step.upload':    '上传文件',
@@ -126,6 +156,10 @@ function applyI18n() {
     el.setAttribute('aria-label', t(el.dataset.i18nAria));
   });
   if (!Object.keys(state.mdByName).length) showEmptyPreview();
+  // Re-render dynamic setup text if the setup screen is currently showing.
+  if (lastSetupPayload && els.setup && !els.setup.classList.contains('hidden')) {
+    showSetup(lastSetupPayload);
+  }
 }
 
 // ── State ──────────────────────────────────────────────────────────────────────
@@ -143,6 +177,19 @@ const state = {
 // ── DOM refs ───────────────────────────────────────────────────────────────────
 const els = {
   connecting:    document.getElementById('dl-connecting'),
+  connectingMsg: document.getElementById('dl-connecting-msg'),
+  setup:         document.getElementById('dl-setup'),
+  setupLead:     document.getElementById('dl-setup-lead'),
+  setupPython:   document.getElementById('dl-setup-python'),
+  setupPythonMsg:document.getElementById('dl-setup-python-msg'),
+  setupRecheck:  document.getElementById('dl-setup-recheck'),
+  setupDeps:     document.getElementById('dl-setup-deps'),
+  setupList:     document.getElementById('dl-setup-list'),
+  setupPyInfo:   document.getElementById('dl-setup-pyinfo'),
+  setupInstall:  document.getElementById('dl-setup-install'),
+  setupProgress: document.getElementById('dl-setup-progress'),
+  setupLog:      document.getElementById('dl-setup-log'),
+  setupError:    document.getElementById('dl-setup-error'),
   langBtn:       document.getElementById('lang-btn'),
   dropzone:      document.getElementById('dropzone'),
   fileInput:     document.getElementById('file-input'),
@@ -541,29 +588,80 @@ function toggleLang() {
   applyI18n();
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────────
-async function init() {
-  setupDropzone();
+// ── Setup screen ─────────────────────────────────────────────────────────────
+let lastSetupPayload = null;
 
-  // Language toggle
-  els.langBtn.textContent = lang === 'en' ? '中文' : 'English';
-  els.langBtn.addEventListener('click', toggleLang);
-  applyI18n();
+function showSetup(payload) {
+  lastSetupPayload = payload || {};
+  els.connecting.classList.add('hidden');
+  els.setupError.classList.add('hidden');
 
-  // Wait for Electron to hand us the backend URL via IPC
-  if (window.electronAPI) {
-    try {
-      state.baseUrl = await window.electronAPI.getBaseUrl();
-    } catch (err) {
-      els.connecting.innerHTML =
-        `<p style="color:#ef4444">${t('backend.error', err.message)}</p>`;
-      return;
-    }
+  const canInstall = payload && payload.canInstall;
+  const py = (payload && payload.python) || null;
+
+  if (!canInstall) {
+    // Python missing or too old — user must install it; no install button.
+    els.setupPython.classList.remove('hidden');
+    els.setupDeps.classList.add('hidden');
+    els.setupLead.classList.add('hidden');
+    els.setupProgress.classList.add('hidden');
+    els.setupPythonMsg.textContent = (py && py.reason === 'too-old')
+      ? t('python.old', py.version || '?')
+      : t('python.none');
   } else {
-    // Dev fallback: read from query string ?api=http://...
-    const params = new URLSearchParams(window.location.search);
-    state.baseUrl = params.get('api') || 'http://127.0.0.1:8000';
+    // Python OK, dependencies missing — offer the install button.
+    els.setupPython.classList.add('hidden');
+    els.setupDeps.classList.remove('hidden');
+    els.setupLead.classList.remove('hidden');
+
+    const missing = (payload && payload.missing) || [];
+    els.setupList.innerHTML = missing.length
+      ? missing.map((m) => `<li>${m.label}</li>`).join('')
+      : '<li>Docling document engine</li>';
+    els.setupPyInfo.textContent = py && py.version ? t('setup.pyinfo', py.version) : '';
   }
+
+  els.setup.classList.remove('hidden');
+}
+
+// Re-check button on the python-missing screen: ask main to re-evaluate.
+async function recheckSetup() {
+  els.setupRecheck.disabled = true;
+  try {
+    await window.electronAPI.rendererReady(); // re-runs evaluateAndProceed in main
+  } finally {
+    els.setupRecheck.disabled = false;
+  }
+}
+
+async function runInstall() {
+  els.setupError.classList.add('hidden');
+  els.setupInstall.disabled = true;
+  els.setupProgress.classList.remove('hidden');
+  els.setupLog.textContent = '';
+  try {
+    await window.electronAPI.installDeps();
+    // Success path continues via onBackendReady; failures via onInstallFailed.
+  } catch (err) {
+    showInstallError(err.message);
+  }
+}
+
+function showInstallError(message) {
+  els.setupError.textContent = t('setup.failed', message);
+  els.setupError.classList.remove('hidden');
+  els.setupInstall.disabled = false;
+  els.setupInstall.textContent = t('setup.retry');
+}
+
+function appendLog(text) {
+  els.setupLog.textContent += text;
+  els.setupLog.scrollTop = els.setupLog.scrollHeight;
+}
+
+// ── Backend ready → reveal converter ─────────────────────────────────────────
+async function proceedWithBackend(baseUrl) {
+  state.baseUrl = baseUrl;
 
   // Tighten CSP connect-src to actual API origin now that we know it
   const origin = new URL(state.baseUrl).origin;
@@ -574,27 +672,29 @@ async function init() {
     );
   }
 
-  // Fetch device options from real backend
   await loadDeviceOptions();
 
-  // Hide connecting overlay
+  els.setup.classList.add('hidden');
   els.connecting.classList.add('hidden');
-
   setStatus('idle', t('ready'));
+}
 
-  // Tab nav
+// ── Init ───────────────────────────────────────────────────────────────────────
+async function init() {
+  setupDropzone();
+
+  // Language toggle
+  els.langBtn.textContent = lang === 'en' ? '中文' : 'English';
+  els.langBtn.addEventListener('click', toggleLang);
+  applyI18n();
+
+  // Static UI listeners (safe to wire before backend is up)
   document.querySelectorAll('.dl-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
-
-  // Preview picker
   els.previewPicker.addEventListener('change', () => selectPreview(els.previewPicker.value));
-
-  // Convert + cancel buttons
   els.runBtn.addEventListener('click', handleConvert);
   els.cancelBtn.addEventListener('click', cancelConversion);
-
-  // Individual download links
   els.downloadList.addEventListener('click', async (e) => {
     const a = e.target.closest('.dl-download-link');
     if (!a) return;
@@ -605,9 +705,33 @@ async function init() {
       setStatus('error', t('dl.error', err.message));
     }
   });
-
-  // Batch download all as ZIP
   els.downloadAllBtn.addEventListener('click', downloadAll);
+  els.setupInstall.addEventListener('click', runInstall);
+  els.setupRecheck.addEventListener('click', recheckSetup);
+
+  if (window.electronAPI) {
+    // Register lifecycle event handlers, then tell main we're ready.
+    window.electronAPI.onSetupNeeded((p) => showSetup(p));
+    window.electronAPI.onStatus((p) => {
+      if (p && p.phase === 'starting') {
+        els.setup.classList.add('hidden');
+        els.connectingMsg.textContent = t('connecting');
+        els.connecting.classList.remove('hidden');
+      }
+    });
+    window.electronAPI.onInstallLog((text) => appendLog(text));
+    window.electronAPI.onInstallFailed((p) => showInstallError(p.message));
+    window.electronAPI.onBackendReady((p) => proceedWithBackend(p.baseUrl));
+    window.electronAPI.onBackendError((p) => {
+      els.connecting.innerHTML =
+        `<p style="color:#ef4444">${t('backend.error', p.message)}</p>`;
+    });
+    await window.electronAPI.rendererReady();
+  } else {
+    // Browser dev fallback: read backend URL from query string ?api=http://...
+    const params = new URLSearchParams(window.location.search);
+    await proceedWithBackend(params.get('api') || 'http://127.0.0.1:8000');
+  }
 }
 
 init();
