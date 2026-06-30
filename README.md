@@ -2,10 +2,9 @@
 
 把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON），基于 [Docling](https://github.com/docling-project/docling)。
 
-三种用法：
+两种用法：
 - **Electron 桌面应用**（主推）— 原生窗口，实时进度，无需浏览器。
 - **命令行** `convert.py`
-- **Gradio Web UI** `app.py`（保留，待确认功能对等后移除）
 
 > 桌面应用**不内置 Python**。它使用你系统上已安装的 Python（3.10+），首次运行时把后端依赖安装到一个独立的 venv 里。启动时会自检：缺 Python 会提示先安装，缺依赖会提供一键安装。
 
@@ -186,6 +185,5 @@ docling-project/
 ├─ electron-start.js  npm start/dev 入口：设环境变量后拉起 electron
 ├─ run-installer.js   postdist:win 钩子：自动运行 dist/ 里最新的 Setup.exe
 ├─ requirements.txt   后端依赖（CPU torch）
-├─ convert.py         CLI 工具（保留）
-└─ app.py             Gradio UI（保留，待移除）
+└─ convert.py         CLI 工具（保留）
 ```
