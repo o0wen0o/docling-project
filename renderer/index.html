@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- connect-src tightened to actual API origin at runtime by app.js -->
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src *;">
-  <title>Docling 文档转换器</title>
+  <title>Docling Document Converter</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,25 +17,28 @@
        stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
   </svg>
-  <p>正在启动后端…</p>
+  <p data-i18n="connecting">Starting backend…</p>
 </div>
 
 <div id="dl-wrap">
 
   <!-- ── Hero ── -->
   <div class="dl-hero">
-    <div class="dl-logo">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <path d="M14 2v6h6"/>
-        <path d="M8 13h8M8 17h5"/>
-      </svg>
+    <div class="dl-hero-inner">
+      <div class="dl-logo">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M8 13h8M8 17h5"/>
+        </svg>
+      </div>
+      <div>
+        <h1 data-i18n="hero.title">Docling Document Converter</h1>
+        <p data-i18n="hero.subtitle">Convert PDF / Word / PPT / Excel / HTML / Images to clean Markdown (JSON optional).</p>
+      </div>
     </div>
-    <div>
-      <h1>Docling 文档转换器</h1>
-      <p>把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON）。</p>
-    </div>
+    <button class="dl-lang-btn" id="lang-btn" type="button">中文</button>
   </div>
 
   <!-- ── Two-column main ── -->
@@ -47,13 +50,15 @@
       <!-- Step 1: Upload -->
       <div class="dl-card">
         <div class="dl-section-title">
-          <span class="dl-step">1</span> 上传文件
+          <span class="dl-step">1</span> <span data-i18n="step.upload">Upload Files</span>
         </div>
         <div class="dropzone" id="dropzone" role="button" tabindex="0"
-             aria-label="文件上传区域，可拖放或点击选择">
+             aria-label="File upload area, drag &amp; drop or click to select"
+             data-i18n-aria="dropzone.aria">
           <input type="file" id="file-input" multiple
                  accept=".pdf,.docx,.pptx,.xlsx,.html,.md,.png,.jpg,.jpeg,.tiff"
-                 aria-label="选择文件">
+                 aria-label="Select files"
+                 data-i18n-aria="fileinput.aria">
           <div class="dropzone-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -62,7 +67,7 @@
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
           </div>
-          <p class="drop-main">拖入或点击选择（可多选）</p>
+          <p class="drop-main" data-i18n="drop.main">Drag &amp; drop or click to select (multi-file)</p>
           <p>.pdf .docx .pptx .xlsx .html .md .png .jpg .jpeg .tiff</p>
         </div>
         <ul id="file-list" class="file-list"></ul>
@@ -71,13 +76,13 @@
       <!-- Step 2: Options -->
       <div class="dl-card">
         <div class="dl-section-title">
-          <span class="dl-step">2</span> 选项
+          <span class="dl-step">2</span> <span data-i18n="step.options">Options</span>
         </div>
 
         <div class="dl-field">
-          <label class="dl-label" for="device-select">计算设备</label>
+          <label class="dl-label" for="device-select" data-i18n="device.label">Compute Device</label>
           <select class="dl-select" id="device-select" aria-describedby="device-hint"></select>
-          <span class="dl-hint" id="device-hint">连接后端后自动检测</span>
+          <span class="dl-hint" id="device-hint" data-i18n="device.hint">Auto-detected after backend connects</span>
         </div>
 
         <div class="dl-checkbox-group">
@@ -85,29 +90,29 @@
             <input type="checkbox" id="do-ocr" checked>
             <span class="dl-checkbox-text">
               <span class="dl-checkbox-label">OCR</span>
-              <span class="dl-checkbox-hint">扫描件 / 图片型 PDF 需要</span>
+              <span class="dl-checkbox-hint" data-i18n="ocr.hint">Required for scanned / image-based PDFs</span>
             </span>
           </label>
           <label class="dl-checkbox">
             <input type="checkbox" id="do-tables" checked>
             <span class="dl-checkbox-text">
-              <span class="dl-checkbox-label">表格结构识别</span>
-              <span class="dl-checkbox-hint">还原表格行列结构</span>
+              <span class="dl-checkbox-label" data-i18n="tables.label">Table Structure Recognition</span>
+              <span class="dl-checkbox-hint" data-i18n="tables.hint">Restore table row/column structure</span>
             </span>
           </label>
           <label class="dl-checkbox">
             <input type="checkbox" id="want-json">
             <span class="dl-checkbox-text">
-              <span class="dl-checkbox-label">同时导出 JSON</span>
-              <span class="dl-checkbox-hint">结构化数据，便于二次处理</span>
+              <span class="dl-checkbox-label" data-i18n="json.label">Also export JSON</span>
+              <span class="dl-checkbox-hint" data-i18n="json.hint">Structured data for further processing</span>
             </span>
           </label>
         </div>
       </div>
 
       <!-- CTA -->
-      <button class="dl-run" id="run-btn" type="button">开始转换</button>
-      <button class="dl-cancel" id="cancel-btn" type="button" style="display:none">取消转换</button>
+      <button class="dl-run" id="run-btn" type="button" data-i18n="run.btn">Start Conversion</button>
+      <button class="dl-cancel" id="cancel-btn" type="button" style="display:none" data-i18n="cancel.btn">Cancel</button>
 
       <!-- Status pill -->
       <div class="dl-status-wrap" id="status-wrap" role="status" aria-live="polite"></div>
@@ -120,20 +125,24 @@
       <!-- Step 3: Results -->
       <div class="dl-card" id="dl-results">
         <div class="dl-section-title">
-          <span class="dl-step">3</span> 结果
+          <span class="dl-step">3</span> <span data-i18n="step.results">Results</span>
         </div>
 
         <div class="dl-tab-nav" role="tablist">
           <button class="dl-tab-btn active" data-tab="preview"
-                  role="tab" aria-selected="true" aria-controls="tab-preview">预览</button>
+                  role="tab" aria-selected="true" aria-controls="tab-preview"
+                  data-i18n="tab.preview">Preview</button>
           <button class="dl-tab-btn" data-tab="details"
-                  role="tab" aria-selected="false" aria-controls="tab-details">结果明细</button>
+                  role="tab" aria-selected="false" aria-controls="tab-details"
+                  data-i18n="tab.details">Details</button>
         </div>
 
         <!-- Preview tab -->
         <div class="dl-tab-panel active" id="tab-preview" data-tab="preview" role="tabpanel">
           <select class="dl-preview-picker" id="preview-picker"
-                  style="display:none" aria-label="选择要预览的文件"></select>
+                  style="display:none"
+                  aria-label="Select file to preview"
+                  data-i18n-aria="picker.aria"></select>
           <div class="dl-preview-content" id="preview-content">
             <div class="dl-empty">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -142,7 +151,7 @@
                 <path d="M14 2v6h6"/>
                 <path d="M8 13h8M8 17h5"/>
               </svg>
-              <p>上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。</p>
+              <p>Upload files and click "Start Conversion"<br>Converted Markdown will appear here.</p>
             </div>
           </div>
         </div>
@@ -152,7 +161,11 @@
           <div class="dl-results-wrap">
             <table class="dl-results-table">
               <thead>
-                <tr><th>状态</th><th>文件</th><th>输出</th></tr>
+                <tr>
+                  <th data-i18n="th.status">Status</th>
+                  <th data-i18n="th.file">File</th>
+                  <th data-i18n="th.output">Output</th>
+                </tr>
               </thead>
               <tbody id="results-body"></tbody>
             </table>
@@ -170,7 +183,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            下载结果
+            <span data-i18n="dl.title">Download Results</span>
           </div>
           <button class="dl-download-all-btn" id="download-all-btn" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -179,7 +192,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            全部下载 ZIP
+            <span data-i18n="dl.all.btn">Download All as ZIP</span>
           </button>
         </div>
         <ul class="dl-download-list" id="download-list"></ul>
@@ -190,11 +203,11 @@
 
   <!-- Footer -->
   <div class="dl-foot">
-    支持格式：
+    <span data-i18n="footer.formats">Supported formats:</span>
     <code>.pdf</code> <code>.docx</code> <code>.pptx</code> <code>.xlsx</code>
     <code>.html</code> <code>.md</code> <code>.png</code> <code>.jpg</code>
     <code>.jpeg</code> <code>.tiff</code>
-    <br>首次运行会下载模型，需联网。结果保存在 <code>output/</code>。
+    <br><span data-i18n-html="footer.note">First run downloads models (internet required). Results saved in <code>output/</code>.</span>
   </div>
 
 </div>

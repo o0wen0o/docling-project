@@ -1,5 +1,133 @@
 'use strict';
 
+// ── i18n ─────────────────────────────────────────────────────────────────────
+const STRINGS = {
+  en: {
+    title:            'Docling Document Converter',
+    connecting:       'Starting backend…',
+    'hero.title':     'Docling Document Converter',
+    'hero.subtitle':  'Convert PDF / Word / PPT / Excel / HTML / Images to clean Markdown (JSON optional).',
+    'step.upload':    'Upload Files',
+    'step.options':   'Options',
+    'step.results':   'Results',
+    'device.label':   'Compute Device',
+    'device.hint':    'Auto-detected after backend connects',
+    'ocr.hint':       'Required for scanned / image-based PDFs',
+    'tables.label':   'Table Structure Recognition',
+    'tables.hint':    'Restore table row/column structure',
+    'json.label':     'Also export JSON',
+    'json.hint':      'Structured data for further processing',
+    'run.btn':        'Start Conversion',
+    'cancel.btn':     'Cancel',
+    'tab.preview':    'Preview',
+    'tab.details':    'Details',
+    'th.status':      'Status',
+    'th.file':        'File',
+    'th.output':      'Output',
+    'dl.title':       'Download Results',
+    'dl.all.btn':     'Download All as ZIP',
+    'footer.formats': 'Supported formats:',
+    'footer.note':    'First run downloads models (internet required). Results saved in <code>output/</code>.',
+    'dropzone.aria':  'File upload area, drag & drop or click to select',
+    'fileinput.aria': 'Select files',
+    'picker.aria':    'Select file to preview',
+    'preview.empty':  'Upload files and click “Start Conversion”<br>Converted Markdown will appear here.',
+    'packing':        'Packing…',
+    'unavailable':    '(unavailable)',
+    'auto.label':     'Auto Detect',
+    'device.error':   'Unable to get device info',
+    'detected':       (label) => `Detected: ${label}`,
+    'init.status':    (label) => `Initializing converter · ${label}`,
+    'converting':     (i, total, ok, fail) => `Converting · ${i}/${total} · OK: ${ok} Failed: ${fail}`,
+    'cancelled':      'Conversion cancelled.',
+    'no.files':       'Please upload files before starting conversion.',
+    'not.ready':      'Backend not ready yet, please wait.',
+    'conv.error':     (msg) => `Conversion error: ${msg}`,
+    'ready':          'Ready — select files then click “Start Conversion”.',
+    'dl.error':       (msg) => `Download failed: ${msg}`,
+    'upload.error':   (code, text) => `Upload failed (${code}): ${text}`,
+    'dl.http.error':  (code) => `Download failed (${code})`,
+    'pack.error':     (code) => `Packing failed (${code})`,
+    'batch.error':    (msg) => `Batch download failed: ${msg}`,
+    'backend.error':  (msg) => `Backend connection failed: ${msg}`,
+    'sse.error':      'Connection to backend lost. Python process may have crashed — restart the app.',
+    'files.selected': (n) => `Selected ${n} file(s) — click “Start Conversion” to continue.`,
+  },
+  zh: {
+    title:            'Docling 文档转换器',
+    connecting:       '正在启动后端…',
+    'hero.title':     'Docling 文档转换器',
+    'hero.subtitle':  '把 PDF / Word / PPT / Excel / HTML / 图片 转成干净的 Markdown（可选 JSON）。',
+    'step.upload':    '上传文件',
+    'step.options':   '选项',
+    'step.results':   '结果',
+    'device.label':   '计算设备',
+    'device.hint':    '连接后端后自动检测',
+    'ocr.hint':       '扫描件 / 图片型 PDF 需要',
+    'tables.label':   '表格结构识别',
+    'tables.hint':    '还原表格行列结构',
+    'json.label':     '同时导出 JSON',
+    'json.hint':      '结构化数据，便于二次处理',
+    'run.btn':        '开始转换',
+    'cancel.btn':     '取消转换',
+    'tab.preview':    '预览',
+    'tab.details':    '结果明细',
+    'th.status':      '状态',
+    'th.file':        '文件',
+    'th.output':      '输出',
+    'dl.title':       '下载结果',
+    'dl.all.btn':     '全部下载 ZIP',
+    'footer.formats': '支持格式：',
+    'footer.note':    '首次运行会下载模型，需联网。结果保存在 <code>output/</code>。',
+    'dropzone.aria':  '文件上传区域，可拖放或点击选择',
+    'fileinput.aria': '选择文件',
+    'picker.aria':    '选择要预览的文件',
+    'preview.empty':  '上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。',
+    'packing':        '打包中…',
+    'unavailable':    '（不可用）',
+    'auto.label':     '自动检测',
+    'device.error':   '无法获取设备信息',
+    'detected':       (label) => `已检测：${label}`,
+    'init.status':    (label) => `初始化转换器 · ${label}`,
+    'converting':     (i, total, ok, fail) => `转换中 · ${i}/${total} · 成功 ${ok} 失败 ${fail}`,
+    'cancelled':      '已取消转换。',
+    'no.files':       '请先上传文件，再点击转换。',
+    'not.ready':      '后端尚未就绪，请稍候。',
+    'conv.error':     (msg) => `转换出错：${msg}`,
+    'ready':          '等待上传 — 选好文件后点「开始转换」。',
+    'dl.error':       (msg) => `下载失败：${msg}`,
+    'upload.error':   (code, text) => `上传失败 (${code}): ${text}`,
+    'dl.http.error':  (code) => `下载失败 (${code})`,
+    'pack.error':     (code) => `打包失败 (${code})`,
+    'batch.error':    (msg) => `批量下载失败：${msg}`,
+    'backend.error':  (msg) => `后端连接失败：${msg}`,
+    'sse.error':      '与后端的连接中断。Python 进程可能已崩溃，请重启应用。',
+    'files.selected': (n) => `已选择 ${n} 个文件 — 点「开始转换」继续。`,
+  },
+};
+
+let lang = localStorage.getItem('docling-lang') || 'en';
+
+function t(key, ...args) {
+  const val = (STRINGS[lang] || STRINGS.en)[key] ?? STRINGS.en[key] ?? key;
+  return typeof val === 'function' ? val(...args) : val;
+}
+
+function applyI18n() {
+  document.title = t('title');
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  });
+  if (!Object.keys(state.mdByName).length) showEmptyPreview();
+}
+
 // ── State ──────────────────────────────────────────────────────────────────────
 const state = {
   files: [],
@@ -15,6 +143,7 @@ const state = {
 // ── DOM refs ───────────────────────────────────────────────────────────────────
 const els = {
   connecting:    document.getElementById('dl-connecting'),
+  langBtn:       document.getElementById('lang-btn'),
   dropzone:      document.getElementById('dropzone'),
   fileInput:     document.getElementById('file-input'),
   fileList:      document.getElementById('file-list'),
@@ -71,7 +200,7 @@ function setFiles(fileList) {
   state.files = Array.from(fileList);
   renderFileList();
   if (state.files.length) {
-    setStatus('idle', `已选择 ${state.files.length} 个文件 — 点「开始转换」继续。`);
+    setStatus('idle', t('files.selected', state.files.length));
   }
 }
 
@@ -147,7 +276,7 @@ function showEmptyPreview() {
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>
       </svg>
-      <p>上传文件并点击「开始转换」<br>转换出的 Markdown 会显示在这里。</p>
+      <p>${t('preview.empty')}</p>
     </div>`;
 }
 
@@ -180,6 +309,13 @@ function addPreviewChoice(label, md) {
 }
 
 // ── Downloads ──────────────────────────────────────────────────────────────────
+const DL_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+function resetDownloadAllBtn() {
+  els.downloadAllBtn.disabled = false;
+  els.downloadAllBtn.innerHTML = `${DL_SVG}<span data-i18n="dl.all.btn">${t('dl.all.btn')}</span>`;
+}
+
 function addDownload(filename) {
   state.downloadFiles.push(filename);
   els.downloads.style.display = '';
@@ -193,7 +329,7 @@ function addDownload(filename) {
 async function downloadFile(filename) {
   const url = `${state.baseUrl}/download/${encodeURIComponent(filename)}`;
   const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`下载失败 (${resp.status})`);
+  if (!resp.ok) throw new Error(t('dl.http.error', resp.status));
   const blob = await resp.blob();
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -208,14 +344,14 @@ async function downloadFile(filename) {
 async function downloadAll() {
   if (!state.downloadFiles.length) return;
   els.downloadAllBtn.disabled = true;
-  els.downloadAllBtn.textContent = '打包中…';
+  els.downloadAllBtn.textContent = t('packing');
   try {
     const resp = await fetch(`${state.baseUrl}/download-all`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ filenames: state.downloadFiles }),
     });
-    if (!resp.ok) throw new Error(`打包失败 (${resp.status})`);
+    if (!resp.ok) throw new Error(t('pack.error', resp.status));
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -226,11 +362,9 @@ async function downloadAll() {
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
   } catch (err) {
-    setStatus('error', `批量下载失败：${err.message}`);
+    setStatus('error', t('batch.error', err.message));
   } finally {
-    els.downloadAllBtn.disabled = false;
-    els.downloadAllBtn.innerHTML =
-      `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>全部下载 ZIP`;
+    resetDownloadAllBtn();
   }
 }
 
@@ -243,21 +377,21 @@ async function loadDeviceOptions() {
     options.forEach(({ key, label, available }) => {
       const opt = document.createElement('option');
       opt.value = key;
-      opt.textContent = available ? label : `${label} （不可用）`;
+      opt.textContent = available ? label : `${label} ${t('unavailable')}`;
       opt.disabled = !available;
       els.deviceSelect.appendChild(opt);
     });
-    els.deviceHint.textContent = `已检测：${auto_label}`;
+    els.deviceHint.textContent = t('detected', auto_label);
   } catch {
     // Fallback options if /device fails
     els.deviceSelect.innerHTML = '';
-    [['auto', '自动检测'], ['xpu', 'Intel GPU (XPU)'], ['cuda', 'NVIDIA GPU (CUDA)'], ['cpu', 'CPU']]
+    [['auto', t('auto.label')], ['xpu', 'Intel GPU (XPU)'], ['cuda', 'NVIDIA GPU (CUDA)'], ['cpu', 'CPU']]
       .forEach(([value, label]) => {
         const opt = document.createElement('option');
         opt.value = value; opt.textContent = label;
         els.deviceSelect.appendChild(opt);
       });
-    els.deviceHint.textContent = '无法获取设备信息';
+    els.deviceHint.textContent = t('device.error');
   }
 }
 
@@ -265,12 +399,12 @@ async function loadDeviceOptions() {
 function handleSseEvent(ev, resolve, reject, es) {
   switch (ev.type) {
     case 'init':
-      setStatus('running', `初始化转换器 · ${ev.dev_label}`);
+      setStatus('running', t('init.status', ev.dev_label));
       break;
 
     case 'file_done': {
       const { index, total, ok, fail, name, label, md, out_files, row } = ev;
-      setStatus('running', `转换中 · ${index + 1}/${total} · 成功 ${ok} 失败 ${fail}`);
+      setStatus('running', t('converting', index + 1, total, ok, fail));
       addResultRow(row);
       if (label && md) {
         addPreviewChoice(label, md);
@@ -314,7 +448,7 @@ function realConversion(files, device, doOcr, doTables, wantJson) {
       const resp = await fetch(`${state.baseUrl}/convert`, { method: 'POST', body: fd });
       if (!resp.ok) {
         const text = await resp.text();
-        throw new Error(`上传失败 (${resp.status}): ${text}`);
+        throw new Error(t('upload.error', resp.status, text));
       }
       const { job_id } = await resp.json();
       state.currentJobId = job_id;
@@ -336,7 +470,7 @@ function realConversion(files, device, doOcr, doTables, wantJson) {
           es.close();
           state.currentEventSource = null;
           state.currentJobId = null;
-          reject(new Error('与后端的连接中断。Python 进程可能已崩溃，请重启应用。'));
+          reject(new Error(t('sse.error')));
         }
       };
     } catch (err) {
@@ -358,7 +492,7 @@ async function cancelConversion() {
       await fetch(`${state.baseUrl}/convert/${jobId}`, { method: 'DELETE' });
     } catch { /* ignore — backend may be gone */ }
   }
-  setStatus('warn', '已取消转换。');
+  setStatus('warn', t('cancelled'));
   state.isRunning = false;
   els.runBtn.disabled = false;
   els.cancelBtn.style.display = 'none';
@@ -368,11 +502,11 @@ async function cancelConversion() {
 async function handleConvert() {
   if (state.isRunning) return;
   if (!state.files.length) {
-    setStatus('idle', '请先上传文件，再点击转换。');
+    setStatus('idle', t('no.files'));
     return;
   }
   if (!state.baseUrl) {
-    setStatus('error', '后端尚未就绪，请稍候。');
+    setStatus('error', t('not.ready'));
     return;
   }
 
@@ -390,7 +524,7 @@ async function handleConvert() {
     await realConversion(state.files, device, doOcr, doTables, wantJson);
   } catch (err) {
     if (state.isRunning) { // not cancelled
-      setStatus('error', `转换出错：${err.message}`);
+      setStatus('error', t('conv.error', err.message));
     }
   } finally {
     state.isRunning = false;
@@ -399,9 +533,22 @@ async function handleConvert() {
   }
 }
 
+// ── Language toggle ────────────────────────────────────────────────────────────
+function toggleLang() {
+  lang = lang === 'en' ? 'zh' : 'en';
+  localStorage.setItem('docling-lang', lang);
+  els.langBtn.textContent = lang === 'en' ? '中文' : 'English';
+  applyI18n();
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────────
 async function init() {
   setupDropzone();
+
+  // Language toggle
+  els.langBtn.textContent = lang === 'en' ? '中文' : 'English';
+  els.langBtn.addEventListener('click', toggleLang);
+  applyI18n();
 
   // Wait for Electron to hand us the backend URL via IPC
   if (window.electronAPI) {
@@ -409,7 +556,7 @@ async function init() {
       state.baseUrl = await window.electronAPI.getBaseUrl();
     } catch (err) {
       els.connecting.innerHTML =
-        `<p style="color:#ef4444">后端连接失败：${err.message}</p>`;
+        `<p style="color:#ef4444">${t('backend.error', err.message)}</p>`;
       return;
     }
   } else {
@@ -433,7 +580,7 @@ async function init() {
   // Hide connecting overlay
   els.connecting.classList.add('hidden');
 
-  setStatus('idle', '等待上传 — 选好文件后点「开始转换」。');
+  setStatus('idle', t('ready'));
 
   // Tab nav
   document.querySelectorAll('.dl-tab-btn').forEach((btn) => {
@@ -455,7 +602,7 @@ async function init() {
     try {
       await downloadFile(a.dataset.file);
     } catch (err) {
-      setStatus('error', `下载失败：${err.message}`);
+      setStatus('error', t('dl.error', err.message));
     }
   });
 

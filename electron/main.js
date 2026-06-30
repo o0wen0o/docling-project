@@ -20,7 +20,7 @@ function createWindow(port) {
     height: 860,
     minWidth: 800,
     minHeight: 600,
-    title: 'Docling 文档转换器',
+    title: 'Docling Document Converter',
     backgroundColor: '#f8fafc',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -52,8 +52,8 @@ app.whenReady().then(async () => {
     createWindow(port);
   } catch (err) {
     dialog.showErrorBox(
-      '后端启动失败',
-      `无法启动 Python 后端：\n\n${err.message}\n\n请确认 Python 和全部依赖已安装。`
+      'Backend Startup Failed',
+      `Failed to start Python backend:\n\n${err.message}\n\nPlease ensure Python and all dependencies are installed.`
     );
     app.quit();
   }

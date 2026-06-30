@@ -48,13 +48,18 @@ html, body {
 :focus-visible { outline: 2px solid var(--dl-accent) !important; outline-offset: 2px; border-radius: 6px; }
 
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
-.dl-hero { display: flex; align-items: center; justify-content: center; gap: 16px;
+.dl-hero { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 6px 2px 24px; }
+.dl-hero-inner { display: flex; align-items: center; gap: 16px; }
 .dl-hero .dl-logo { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px;
   border-radius: 16px; background: linear-gradient(135deg, #4f46e5, #2563eb); color: #fff;
   box-shadow: 0 8px 22px rgba(79,70,229,.28); flex: 0 0 auto; }
 .dl-hero h1 { margin: 0; font-size: 1.7rem; font-weight: 700; letter-spacing: -.025em; line-height: 1.15; }
 .dl-hero p { margin: 4px 0 0; font-size: .95rem; color: var(--body-text-color-subdued); }
+.dl-lang-btn { flex: 0 0 auto; background: none; border: 1px solid var(--border-color-primary);
+  border-radius: 6px; padding: 5px 12px; font-size: 12px; font-family: var(--dl-font);
+  color: var(--body-text-color-subdued); cursor: pointer; transition: border-color .15s, color .15s; }
+.dl-lang-btn:hover { border-color: var(--dl-accent); color: var(--dl-accent); }
 
 /* ── Two-column ────────────────────────────────────────────────────────────── */
 #dl-main { display: flex; gap: 24px; align-items: start; }

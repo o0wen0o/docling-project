@@ -47,7 +47,7 @@ def device_info():
         return AcceleratorDevice.XPU, f"Intel GPU (XPU) · {torch.xpu.get_device_name(0)}"
     if torch.cuda.is_available():
         return AcceleratorDevice.CUDA, f"NVIDIA GPU (CUDA) · {torch.cuda.get_device_name(0)}"
-    return AcceleratorDevice.CPU, "CPU · 未检测到 GPU，速度较慢"
+    return AcceleratorDevice.CPU, "CPU · No GPU detected, conversion will be slow"
 
 
 DEVICE_MAP = {
@@ -58,7 +58,7 @@ DEVICE_MAP = {
 }
 
 DEVICE_LABELS = {
-    "auto": "自动检测",
+    "auto": "Auto Detect",
     "xpu": "Intel GPU (XPU)",
     "cuda": "NVIDIA GPU (CUDA)",
     "cpu": "CPU",
@@ -129,8 +129,8 @@ def run_conversion(
         yield {
             "type": "error",
             "message": (
-                f"没有受支持的文件（跳过 {len(skipped_names)} 个）。"
-                f"支持：{', '.join(sorted(SUPPORTED_EXT))}"
+                f"No supported files (skipped {len(skipped_names)})."
+                f" Supported: {', '.join(sorted(SUPPORTED_EXT))}"
             ),
         }
         return
@@ -169,7 +169,7 @@ def run_conversion(
                 out_files.append(json_path.name)
                 extra = " + JSON"
 
-            partial = " · 部分成功" if result.status == ConversionStatus.PARTIAL_SUCCESS else ""
+            partial = " · partial" if result.status == ConversionStatus.PARTIAL_SUCCESS else ""
             ok += 1
             yield {
                 "type": "file_done",
@@ -181,7 +181,7 @@ def run_conversion(
                 "label": label,
                 "md": md_text,
                 "out_files": out_files,
-                "row": [f"✓ 成功{partial}", name, f"{stem}.md{extra}"],
+                "row": [f"✓ OK{partial}", name, f"{stem}.md{extra}"],
             }
         else:
             fail += 1
@@ -195,20 +195,20 @@ def run_conversion(
                 "label": None,
                 "md": None,
                 "out_files": [],
-                "row": ["✗ 失败", name, str(result.status)],
+                "row": ["✗ Failed", name, str(result.status)],
             }
 
     dt = time.time() - t0
-    skipped_note = f" · 跳过 {len(skipped_names)} 个不支持" if skipped_names else ""
+    skipped_note = f" · skipped {len(skipped_names)} unsupported" if skipped_names else ""
 
     if ok and not fail:
-        summary = f"完成 · 成功 {ok} 个 · 用时 {dt:.1f}s{skipped_note}"
+        summary = f"Done · {ok} succeeded · {dt:.1f}s{skipped_note}"
         status_kind = "done"
     elif ok and fail:
-        summary = f"部分完成 · 成功 {ok}，失败 {fail} · 用时 {dt:.1f}s{skipped_note}"
+        summary = f"Partial · {ok} OK, {fail} failed · {dt:.1f}s{skipped_note}"
         status_kind = "warn"
     else:
-        summary = f"全部失败 · {fail} 个 · 用时 {dt:.1f}s{skipped_note}"
+        summary = f"All failed · {fail} · {dt:.1f}s{skipped_note}"
         status_kind = "error"
 
     yield {
